@@ -16,32 +16,49 @@ export default function App() {
   const [activeTier, setActiveTier] = useState<string>('');
   const [activeBudget, setActiveBudget] = useState<number | undefined>(undefined);
 
-  // Check secret URL: /dashboard or #/dashboard
+  // Check if current URL is the secret dashboard route (/dashboard or #/dashboard)
   const isDashboardRoute = () => {
     if (typeof window === 'undefined') return false;
-    const path = window.location.pathname;
-    const hash = window.location.hash;
-    return path === '/dashboard' || path.startsWith('/dashboard/') || hash === '#/dashboard';
+    const path = window.location.pathname.replace(/\/+$/, '').toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+    return (
+      path === '/dashboard' ||
+      path.endsWith('/dashboard') ||
+      hash === '#/dashboard' ||
+      hash === '#dashboard' ||
+      hash.startsWith('#/dashboard')
+    );
   };
 
-  // Default to true so user sees the dashboard directly in AI Studio preview as requested
-  const [isLeadsOpen, setIsLeadsOpen] = useState<boolean>(true);
+  // Direct to public site by default when entering, unless /dashboard is explicitly accessed
+  const [isLeadsOpen, setIsLeadsOpen] = useState<boolean>(() => isDashboardRoute());
 
   useEffect(() => {
     const handleLocationChange = () => {
-      if (isDashboardRoute()) {
-        setIsLeadsOpen(true);
-      }
+      setIsLeadsOpen(isDashboardRoute());
     };
+
+    // Check immediately on mount in case URL was updated
+    if (isDashboardRoute()) {
+      setIsLeadsOpen(true);
+    }
 
     window.addEventListener('popstate', handleLocationChange);
     window.addEventListener('hashchange', handleLocationChange);
 
-    // Founder keyboard shortcut: Ctrl+Shift+D or Cmd+Shift+D to toggle dashboard
+    // Founder keyboard shortcut (Ctrl+Shift+D or Cmd+Shift+D) as an extra secret shortcut
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
         e.preventDefault();
-        setIsLeadsOpen((prev) => !prev);
+        setIsLeadsOpen((prev) => {
+          const next = !prev;
+          if (next) {
+            window.history.pushState(null, '', '#/dashboard');
+          } else {
+            window.history.pushState(null, '', window.location.pathname || '/');
+          }
+          return next;
+        });
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -55,8 +72,12 @@ export default function App() {
 
   const handleCloseDashboard = () => {
     setIsLeadsOpen(false);
-    if (typeof window !== 'undefined' && window.location.hash === '#/dashboard') {
-      window.history.replaceState(null, '', window.location.pathname);
+    if (typeof window !== 'undefined') {
+      if (window.location.hash.includes('dashboard')) {
+        window.history.replaceState(null, '', window.location.pathname || '/');
+      } else if (window.location.pathname.includes('/dashboard')) {
+        window.history.replaceState(null, '', '/');
+      }
     }
   };
 
@@ -125,39 +146,12 @@ export default function App() {
         suggestedBudget={activeBudget}
       />
 
-      {/* Founder Portal / Agency Dashboard: Opens by default in preview */}
+      {/* Founder Portal / Agency Dashboard: Only opened when accessing /dashboard */}
       <FounderLeadsDashboard
         isOpen={isLeadsOpen}
         onClose={handleCloseDashboard}
         onNavigateToSection={handleScrollToSection}
       />
-
-      {/* Floating Studio Preview Switcher - Always available in preview so user never gets locked out */}
-      <div className="fixed bottom-5 right-5 z-[9999] flex items-center gap-2 p-1.5 rounded-full bg-slate-900/90 border border-cyan-500/30 backdrop-blur-md shadow-2xl shadow-cyan-500/20 text-xs text-slate-300">
-        <button
-          onClick={() => setIsLeadsOpen(false)}
-          className={`px-3 py-1.5 rounded-full font-medium transition-all ${
-            !isLeadsOpen
-              ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
-              : 'text-slate-400 hover:text-white hover:bg-white/5'
-          }`}
-          title="Switch to Live Public Website"
-        >
-          🌐 Site Public
-        </button>
-        <button
-          onClick={() => setIsLeadsOpen(true)}
-          className={`px-3 py-1.5 rounded-full font-medium flex items-center gap-1.5 transition-all ${
-            isLeadsOpen
-              ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/30'
-              : 'text-slate-400 hover:text-white hover:bg-white/5'
-          }`}
-          title="Open Founder Dashboard"
-        >
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          ⚡ Dashboard Fondator
-        </button>
-      </div>
     </div>
   );
 }
