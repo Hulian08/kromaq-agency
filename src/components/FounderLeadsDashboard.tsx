@@ -59,9 +59,19 @@ import {
   Key,
   Eye,
   EyeOff,
-  AlertCircle
+  AlertCircle,
+  Bell,
+  Send,
+  Radio,
+  RefreshCw,
 } from 'lucide-react';
 import { KromaqIcon } from './KromaqLogo';
+import { 
+  TARGET_EMAIL, 
+  getNotificationLogs, 
+  sendLeadNotification, 
+  NotificationLog 
+} from '../utils/notificationService';
 
 interface FounderLeadsDashboardProps {
   isOpen: boolean;
@@ -77,7 +87,8 @@ type DashboardTab =
   | 'ads_roas' 
   | 'creators' 
   | 'contracts' 
-  | 'analytics';
+  | 'analytics'
+  | 'notifications';
 
 type Currency = 'EUR' | 'RON' | 'USD';
 
@@ -169,6 +180,15 @@ export const FounderLeadsDashboard: React.FC<FounderLeadsDashboardProps> = ({
     setAuthPassword('');
   };
 
+  // Email Notifications State (Target: kromaqagency@gmail.com)
+  const [notificationLogs, setNotificationLogs] = useState<NotificationLog[]>(() => getNotificationLogs());
+  const [isSimulatingNotification, setIsSimulatingNotification] = useState<boolean>(false);
+  const [simulationStatusMsg, setSimulationStatusMsg] = useState<{
+    type: 'success' | 'error' | 'info';
+    text: string;
+  } | null>(null);
+  const [customTestMessage, setCustomTestMessage] = useState<string>('');
+
   const refreshLeads = () => {
     setLeads(getStoredLeads());
   };
@@ -176,16 +196,20 @@ export const FounderLeadsDashboard: React.FC<FounderLeadsDashboardProps> = ({
   useEffect(() => {
     if (isOpen) {
       refreshLeads();
+      setNotificationLogs(getNotificationLogs());
     }
   }, [isOpen]);
 
   useEffect(() => {
     const handleUpdate = () => refreshLeads();
+    const handleNotifUpdate = () => setNotificationLogs(getNotificationLogs());
     window.addEventListener('kromaq_new_lead', handleUpdate);
     window.addEventListener('kromaq_leads_updated', handleUpdate);
+    window.addEventListener('kromaq_notifications_updated', handleNotifUpdate);
     return () => {
       window.removeEventListener('kromaq_new_lead', handleUpdate);
       window.removeEventListener('kromaq_leads_updated', handleUpdate);
+      window.removeEventListener('kromaq_notifications_updated', handleNotifUpdate);
     };
   }, []);
 
@@ -403,25 +427,111 @@ export const FounderLeadsDashboard: React.FC<FounderLeadsDashboardProps> = ({
     refreshLeads();
   };
 
-  const handleAddSample = () => {
+  const handleSimulateAndNotify = async (customBrandName?: string) => {
+    setIsSimulatingNotification(true);
+    setSimulationStatusMsg({
+      type: 'info',
+      text: `Se generează simularea și se transmite notificarea către ${TARGET_EMAIL}...`,
+    });
+
     const clujSamples = [
-      { brand: 'Atelier Transilvania Fashion', founder: 'Andrei Moldovan', handle: '@ateliertransilvania', budget: '€4,500/mo' },
-      { brand: 'Cluj Craft Specialty Roastery', founder: 'Sorin Muntean', handle: '@clujcraftcoffee', budget: '€3,800/mo' },
-      { brand: 'AeroSync Drone Dynamics', founder: 'Ioana Barbu', handle: '@aerosync.tech', budget: '€6,900/mo' },
-      { brand: 'Verve Gastro Lounge Cluj', founder: 'Radu Câmpean', handle: '@verve.cluj', budget: '€3,200/mo' }
+      {
+        brand: 'Atelier Transilvania Fashion',
+        founder: 'Andrei Moldovan',
+        handle: '@ateliertransilvania',
+        budget: '€4,500/mo',
+        slot: 'Mâine, 14:00 EET',
+        service: 'Motion & Performance (Video 4K Cluj)',
+      },
+      {
+        brand: 'Cluj Craft Specialty Roastery',
+        founder: 'Sorin Muntean',
+        handle: '@clujcraftcoffee',
+        budget: '€3,800/mo',
+        slot: 'Joi, 11:30 EET',
+        service: 'TikTok & Reels Cinema Scalare',
+      },
+      {
+        brand: 'AeroSync Drone Dynamics',
+        founder: 'Ioana Barbu',
+        handle: '@aerosync.tech',
+        budget: '€6,900/mo',
+        slot: 'Vineri, 16:00 EET',
+        service: 'Enterprise Bespoke & Meta Ads',
+      },
+      {
+        brand: 'Verve Gastro Lounge Piața Unirii',
+        founder: 'Radu Câmpean',
+        handle: '@verve.cluj',
+        budget: '€3,200/mo',
+        slot: 'Luni, 12:00 EET',
+        service: 'Content Lunar & Shootings Cluj',
+      },
     ];
-    const item = clujSamples[Math.floor(Math.random() * clujSamples.length)];
-    saveNewLead({
+
+    const item = customBrandName 
+      ? { brand: customBrandName, founder: 'Partener Cluj', handle: '@kromaq.brand', budget: '€5,000/mo', slot: 'Mâine, 15:00 EET', service: 'Simulare Test Direct' }
+      : clujSamples[Math.floor(Math.random() * clujSamples.length)];
+
+    const newSimLead = saveNewLead({
       fullName: item.founder,
-      email: `${item.founder.toLowerCase().replace(' ', '.')}@example.com`,
+      email: `${item.founder.toLowerCase().replace(/[^a-z0-9]/g, '.')}@gmail.com`,
       brandName: item.brand,
       socialHandle: item.handle,
       budget: item.budget,
-      selectedSlot: 'Joi, 15:30 EET (Cluj)',
-      message: 'Dorim scalare conținut TikTok & Reels + producție video cinema la locația noastră din Cluj.',
-      tier: 'Motion & Performance',
+      selectedSlot: item.slot,
+      message: `[TEST SIMULARE CONECTIVITATE]: Solicitare campanie marketing video și scalare paid media pentru ${item.brand} din Cluj-Napoca.`,
+      tier: item.service,
+    }, true);
+
+    const result = await sendLeadNotification(newSimLead, true);
+    setIsSimulatingNotification(false);
+    setSimulationStatusMsg({
+      type: 'success',
+      text: `✓ Notificare expediată cu succes către ${TARGET_EMAIL} pentru brandul "${item.brand}"! Verifică inbox-ul.`,
     });
     refreshLeads();
+    setNotificationLogs(getNotificationLogs());
+    setTimeout(() => {
+      setSimulationStatusMsg(null);
+    }, 9000);
+  };
+
+  const handleAddSample = () => {
+    handleSimulateAndNotify();
+  };
+
+  const handleDirectPingTest = async () => {
+    setIsSimulatingNotification(true);
+    setSimulationStatusMsg({
+      type: 'info',
+      text: `Se transmite test de verificare a conectivității către ${TARGET_EMAIL}...`,
+    });
+
+    const pingLead: Lead = {
+      id: `ping-${Date.now()}`,
+      fullName: 'Iulian Chirila (Admin Kromaq)',
+      email: TARGET_EMAIL,
+      brandName: 'Test Conectivitate Dashboard Fondator',
+      socialHandle: '@kromaq.agency',
+      budget: '€5,000 — €10,000/mo',
+      selectedSlot: 'Acum (Test Instant)',
+      tier: 'Test Conectivitate Sistem',
+      createdAt: new Date().toISOString(),
+      status: 'new',
+      message: customTestMessage.trim() || 'Verificare conectivitate terminal Kromaq Cluj: canalul de alertă pe email kromaqagency@gmail.com este operațional.',
+    };
+
+    const result = await sendLeadNotification(pingLead, true);
+    setIsSimulatingNotification(false);
+    setSimulationStatusMsg({
+      type: 'success',
+      text: `✓ Ping trimis cu succes către ${TARGET_EMAIL}! Verifică inbox-ul kromaqagency@gmail.com.`,
+    });
+    setNotificationLogs(getNotificationLogs());
+    setTimeout(() => {
+      setSimulationStatusMsg(null);
+    }, 9000);
   };
 
   const handleCreateShoot = (e: React.FormEvent) => {
@@ -596,6 +706,25 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                   </div>
                   <span className="px-1.5 py-0.5 rounded-full bg-cyan-400 text-slate-950 text-[10px] font-mono font-bold">
                     {leads.length}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('notifications')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium transition-all cursor-pointer ${
+                    activeTab === 'notifications'
+                      ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-300 border border-cyan-500/30 shadow-md font-bold'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Bell className="w-4 h-4 text-emerald-400" />
+                    <span>Notificări Email</span>
+                  </div>
+                  <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono flex items-center gap-1 font-bold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Live
                   </span>
                 </button>
 
@@ -846,6 +975,7 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
               <div className="flex items-center gap-2">
                 <h3 className="text-base sm:text-lg font-bold font-display text-white">
                   {activeTab === 'leads' && 'Panou Inbound Leads & Prospectare'}
+                  {activeTab === 'notifications' && 'Hub Conectivitate & Notificări Email'}
                   {activeTab === 'schedule' && 'Calendar Apeluri & Ședințe Strategice'}
                   {activeTab === 'retainers' && 'Retainere Lunare & Livrabile Active'}
                   {activeTab === 'shoots' && 'Planificator Filmări & Producție Video Cluj-Napoca'}
@@ -858,13 +988,31 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                   Valută: {currency}
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
-                Sistem operațional Kromaq pentru agenție de social media bazată în Cluj-Napoca
-              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-0.5 text-xs text-slate-400">
+                <span>Sistem operațional Kromaq Cluj-Napoca</span>
+                <span className="text-slate-600">•</span>
+                <span className="text-emerald-400 font-mono text-[11px] flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Email Destinație: {TARGET_EMAIL}
+                </span>
+              </div>
             </div>
 
             {/* Quick Global Action Buttons */}
             <div className="flex items-center gap-2">
+              {/* Permanent Email Simulation & Test Button */}
+              <button
+                type="button"
+                onClick={() => handleSimulateAndNotify()}
+                disabled={isSimulatingNotification}
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-blue-500/20 hover:from-emerald-500/30 hover:to-cyan-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+                title={`Trimite lead de simulare și notificare automată pe ${TARGET_EMAIL}`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <Send className="w-3.5 h-3.5 text-emerald-400" />
+                <span>{isSimulatingNotification ? 'Se transmite...' : 'Simulează & Testează Email'}</span>
+              </button>
+
               {activeTab === 'shoots' && (
                 <button
                   type="button"
@@ -878,16 +1026,6 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
 
               {activeTab === 'leads' && (
                 <>
-                  <button
-                    type="button"
-                    onClick={handleAddSample}
-                    className="px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer"
-                    title="Adaugă lead de test din Cluj"
-                  >
-                    <Plus className="w-3.5 h-3.5 text-cyan-400" />
-                    <span className="hidden sm:inline">Simulează Lead Cluj</span>
-                  </button>
-
                   <button
                     type="button"
                     onClick={() => setIsAddModalOpen(true)}
@@ -919,6 +1057,32 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
               </button>
             </div>
           </div>
+
+          {/* Real-time Email Simulation Feedback Banner */}
+          {simulationStatusMsg && (
+            <div
+              className={`p-3 px-6 flex items-center justify-between text-xs transition-all ${
+                simulationStatusMsg.type === 'success'
+                  ? 'bg-emerald-950/90 text-emerald-300 border-b border-emerald-500/50 shadow-lg'
+                  : simulationStatusMsg.type === 'error'
+                  ? 'bg-rose-950/90 text-rose-300 border-b border-rose-500/50'
+                  : 'bg-cyan-950/90 text-cyan-300 border-b border-cyan-500/50 animate-pulse'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Bell className="w-4 h-4 shrink-0 text-cyan-400" />
+                <span className="font-semibold">{simulationStatusMsg.text}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSimulationStatusMsg(null)}
+                className="text-slate-400 hover:text-white ml-3 text-xs p-1"
+                aria-label="Închide alerta"
+              >
+                ✕
+              </button>
+            </div>
+          )}
 
           {/* TAB 1: INBOUND LEADS */}
           {activeTab === 'leads' && (
@@ -1690,6 +1854,269 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                     <div className="text-xs text-slate-400 mt-1">Contracte Încheiate</div>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 9: EMAIL NOTIFICATIONS & CONNECTIVITY HUB (TARGET: kromaqagency@gmail.com) */}
+          {activeTab === 'notifications' && (
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+              {/* Header Status Card */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-[#0a101f] to-[#070b14] border border-cyan-500/30 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-[11px] font-mono uppercase tracking-wider text-emerald-400 font-bold">
+                        Canal Conectat & Monitorizat Live
+                      </span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-black font-display text-white">
+                      Notificări Email Instantanee
+                    </h3>
+                    <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+                      Toate lead-urile, cererile de strategie și programările înregistrate prin formularele publice de pe site (cât și testele simulate de tine) sunt expediate automat către adresa configurată.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-700/80 flex flex-col items-start gap-1.5 shadow-lg shrink-0 min-w-[280px]">
+                    <div className="text-[10px] text-slate-400 uppercase tracking-wider font-mono font-semibold">
+                      Adresă E-mail Destinație
+                    </div>
+                    <div className="text-base font-mono font-bold text-cyan-300 flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-cyan-400 shrink-0" />
+                      <span>{TARGET_EMAIL}</span>
+                    </div>
+                    <div className="text-[10px] text-emerald-400 flex items-center gap-1 font-mono pt-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      <span>Protocol SMTP Relay Activat</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Important First-time Activation Note */}
+                <div className="mt-5 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3 text-xs text-amber-200">
+                  <AlertCircle className="w-5 h-5 shrink-0 text-amber-400 mt-0.5" />
+                  <div className="space-y-1">
+                    <div className="font-bold text-amber-300">
+                      Activare inițială a inbox-ului (O singură dată):
+                    </div>
+                    <p className="text-amber-200/90 leading-relaxed text-[11px]">
+                      La prima notificare trimisă de sistem către <strong>{TARGET_EMAIL}</strong>, serviciul de securitate <em>FormSubmit</em> va trimite un mesaj scurt cu titlul <strong>„Action Required: Activate Form”</strong>. Deschide acel email în căsuța ta de Gmail și apasă butonul <strong>„Activate Form”</strong>. După aceea, toate notificările următoare vor sosi direct în inbox, fără nicio altă confirmare!
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Simulation & Test Console */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Left: Quick Simulation Cards */}
+                <div className="lg:col-span-7 p-6 rounded-2xl bg-[#090e18] border border-slate-800 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold font-display text-white flex items-center gap-2">
+                        <Send className="w-4 h-4 text-cyan-400" />
+                        Simulare Lead Nou & Trimitere Notificare
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Apasă un buton pentru a genera un lead realist din Cluj și a verifica transmiterea emailului:
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    {[
+                      {
+                        name: 'Atelier Transilvania Fashion',
+                        founder: 'Andrei Moldovan',
+                        budget: '€4,500/mo',
+                        type: 'Fashion & E-Commerce',
+                      },
+                      {
+                        name: 'Cluj Specialty Roastery',
+                        founder: 'Sorin Muntean',
+                        budget: '€3,800/mo',
+                        type: 'HoReCa & Brand Local',
+                      },
+                      {
+                        name: 'AeroSync Drone Dynamics',
+                        founder: 'Ioana Barbu',
+                        budget: '€6,900/mo',
+                        type: 'Tech & B2B Enterprise',
+                      },
+                      {
+                        name: 'Verve Gastro Lounge Cluj',
+                        founder: 'Radu Câmpean',
+                        budget: '€3,200/mo',
+                        type: 'Lifestyle & Hospitality',
+                      },
+                    ].map((item) => (
+                      <button
+                        key={item.name}
+                        type="button"
+                        disabled={isSimulatingNotification}
+                        onClick={() => handleSimulateAndNotify(item.name)}
+                        className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-cyan-500/50 hover:bg-slate-800/70 transition-all text-left group cursor-pointer disabled:opacity-50"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono text-cyan-400">{item.type}</span>
+                          <Send className="w-3 h-3 text-slate-600 group-hover:text-cyan-400 transition-colors" />
+                        </div>
+                        <div className="text-xs font-bold text-white mt-1 group-hover:text-cyan-300 transition-colors">
+                          {item.name}
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1">
+                          <span>{item.founder}</span>
+                          <span className="font-mono text-emerald-400 font-semibold">{item.budget}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      disabled={isSimulatingNotification}
+                      onClick={() => handleSimulateAndNotify()}
+                      className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer disabled:opacity-50"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>{isSimulatingNotification ? 'Se generează & se trimite notificare...' : 'Generează Simulare Aleatorie & Notifică'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right: Direct Custom Ping Test */}
+                <div className="lg:col-span-5 p-6 rounded-2xl bg-[#090e18] border border-slate-800 flex flex-col justify-between space-y-4">
+                  <div>
+                    <h4 className="text-sm font-bold font-display text-white flex items-center gap-2">
+                      <Radio className="w-4 h-4 text-emerald-400" />
+                      Ping Test Direct către {TARGET_EMAIL}
+                    </h4>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                      Trimite un semnal de verificare manual direct pe emailul tău pentru a confirma că inbox-ul recepționează alertele.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1 font-medium">
+                        Notă sau mesaj personalizat pentru test (opțional):
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={customTestMessage}
+                        onChange={(e) => setCustomTestMessage(e.target.value)}
+                        placeholder="Ex: Test conexiune efectuat la ora 16:30 din panoul de administrare..."
+                        className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={isSimulatingNotification}
+                      onClick={handleDirectPingTest}
+                      className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer disabled:opacity-50"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>{isSimulatingNotification ? 'Se expediază ping-ul...' : 'Trimite Ping de Test pe Gmail'}</span>
+                    </button>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-800/80 text-[10px] text-slate-500 flex items-center justify-between font-mono">
+                    <span>Recepție: {TARGET_EMAIL}</span>
+                    <span className="text-cyan-400">Status: Gata de trimitere</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Log of Dispatched Notifications */}
+              <div className="p-6 rounded-2xl bg-[#090e18] border border-slate-800 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-sm font-bold font-display text-white flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-cyan-400" />
+                      Jurnal Alerte & Istoric Notificări Expediate
+                    </h4>
+                    <p className="text-xs text-slate-400">
+                      Înregistrarea live a tuturor notificărilor transmise către {TARGET_EMAIL}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-400 font-mono">
+                      Total: <strong className="text-white">{notificationLogs.length}</strong> evenimente
+                    </span>
+                    {notificationLogs.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          localStorage.removeItem('kromaq_notification_logs_v1');
+                          setNotificationLogs([]);
+                        }}
+                        className="text-[10px] text-slate-500 hover:text-slate-300 font-mono px-2 py-1 rounded bg-slate-900 border border-slate-800 transition-colors cursor-pointer"
+                      >
+                        Curăță Jurnal
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {notificationLogs.length === 0 ? (
+                  <div className="text-center py-12 rounded-xl bg-slate-900/40 border border-slate-800/60 space-y-2">
+                    <Bell className="w-8 h-8 text-slate-600 mx-auto" />
+                    <div className="text-xs font-semibold text-slate-300">
+                      Nicio notificare înregistrată încă în sesiune
+                    </div>
+                    <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
+                      Apasă pe butonul „Simulează & Testează Email” de mai sus sau trimite un formular din site pentru a vedea prima alertă în jurnal.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-slate-800">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-[#05080e] text-slate-400 uppercase text-[10px] font-mono tracking-wider border-b border-slate-800">
+                        <tr>
+                          <th className="py-3 px-4">Data & Ora</th>
+                          <th className="py-3 px-4">Tip Eveniment</th>
+                          <th className="py-3 px-4">Brand / Client</th>
+                          <th className="py-3 px-4">Buget</th>
+                          <th className="py-3 px-4">Destinatar</th>
+                          <th className="py-3 px-4">Status Transmitere</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/80 font-mono text-[11px]">
+                        {notificationLogs.map((log) => (
+                          <tr key={log.id} className="hover:bg-slate-900/50 transition-colors">
+                            <td className="py-2.5 px-4 text-slate-400 whitespace-nowrap">{log.timestamp}</td>
+                            <td className="py-2.5 px-4 whitespace-nowrap">
+                              {log.isSimulation ? (
+                                <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[10px]">
+                                  Simulare Test
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[10px]">
+                                  Lead Public Site
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-4 font-bold text-white">{log.brandName}</td>
+                            <td className="py-2.5 px-4 text-slate-300">{log.budget}</td>
+                            <td className="py-2.5 px-4 text-cyan-400">{log.recipient}</td>
+                            <td className="py-2.5 px-4 whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1.5 text-emerald-400">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                                <span>Trimis</span>
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           )}

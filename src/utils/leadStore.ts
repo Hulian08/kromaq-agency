@@ -1,3 +1,5 @@
+import { sendLeadNotification } from './notificationService';
+
 export type LeadStatus = 'new' | 'contacted' | 'call_scheduled' | 'proposal_sent' | 'closed';
 
 export interface Lead {
@@ -76,7 +78,7 @@ export function getStoredLeads(): Lead[] {
   }
 }
 
-export function saveNewLead(lead: Omit<Lead, 'id' | 'createdAt' | 'status'>): Lead {
+export function saveNewLead(lead: Omit<Lead, 'id' | 'createdAt' | 'status'>, isSimulation = false): Lead {
   const current = getStoredLeads();
   const newLead: Lead = {
     ...lead,
@@ -90,6 +92,10 @@ export function saveNewLead(lead: Omit<Lead, 'id' | 'createdAt' | 'status'>): Le
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent('kromaq_new_lead', { detail: newLead }));
   } catch (err) {}
+
+  // Automatically dispatch notification to kromaqagency@gmail.com
+  sendLeadNotification(newLead, isSimulation).catch(() => {});
+
   return newLead;
 }
 
