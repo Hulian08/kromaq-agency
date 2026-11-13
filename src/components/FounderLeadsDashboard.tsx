@@ -79,7 +79,7 @@ import {
   buildLogoSvg,
   downloadSvgFile,
   downloadPngFile,
-  downloadAllLogosBatch,
+  downloadBrandKitZip,
   LogoAssetSpec,
 } from '../utils/logoExporter';
 
@@ -2170,22 +2170,24 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  disabled={batchDownloading}
-                  onClick={async () => {
-                    setBatchDownloading(true);
-                    try {
-                      await downloadAllLogosBatch();
-                    } finally {
-                      setBatchDownloading(false);
-                    }
-                  }}
-                  className="shrink-0 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer disabled:opacity-50"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>{batchDownloading ? 'Se descarcă pachetul...' : 'Descarcă Toate (PNG HD)'}</span>
-                </button>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
+                  <button
+                    type="button"
+                    disabled={batchDownloading}
+                    onClick={async () => {
+                      setBatchDownloading(true);
+                      try {
+                        await downloadBrandKitZip();
+                      } finally {
+                        setBatchDownloading(false);
+                      }
+                    }}
+                    className="px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer disabled:opacity-50"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>{batchDownloading ? 'Se arhivează .ZIP 4K...' : 'Descarcă Tot (.ZIP 4K + SVG)'}</span>
+                  </button>
+                </div>
               </div>
 
               {/* Grid of Generated Vector + PNG Logo Variants */}

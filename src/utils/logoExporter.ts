@@ -1,3 +1,5 @@
+import JSZip from 'jszip';
+
 export type LogoVariantId =
   | 'icon-transparent'
   | 'avatar-dark'
@@ -22,79 +24,79 @@ export interface LogoAssetSpec {
 export const LOGO_ASSETS: LogoAssetSpec[] = [
   {
     id: 'avatar-dark',
-    title: 'Avatar Profil Social Media (Dark)',
+    title: 'Avatar Profil Social Media (Dark · 4K)',
     subtitle: 'Simbolul Crystal Q pe fundal Midnight Obsidian (#06090E) cu reflexie cyan',
     platforms: 'Instagram · TikTok · YouTube · LinkedIn · WhatsApp Business',
     previewBg: 'obsidian',
-    pngWidth: 1080,
-    pngHeight: 1080,
-    fileBaseName: 'kromaq-avatar-dark-1080x1080',
+    pngWidth: 4096,
+    pngHeight: 4096,
+    fileBaseName: 'kromaq-avatar-dark-4k',
     supportsSvg: true,
   },
   {
     id: 'icon-transparent',
-    title: 'Iconiță Crystal Q (Transparent)',
+    title: 'Iconiță Crystal Q (Transparent · 4K)',
     subtitle: 'Simbol vectorial fără fundal pentru watermark video, Reels & grafică',
     platforms: 'CapCut · Premiere Pro · After Effects · Canva · Figma',
     previewBg: 'checker-dark',
-    pngWidth: 1024,
-    pngHeight: 1024,
-    fileBaseName: 'kromaq-icon-q-transparent',
+    pngWidth: 4096,
+    pngHeight: 4096,
+    fileBaseName: 'kromaq-icon-q-transparent-4k',
     supportsSvg: true,
   },
   {
     id: 'avatar-light',
-    title: 'Avatar Profil (Light / Print)',
+    title: 'Avatar Profil (Light / Print · 4K)',
     subtitle: 'Simbolul Crystal Q pe fundal alb curat pentru profile light și documente',
     platforms: 'Google Business · Facturi · Documente Oficiale',
     previewBg: 'white',
-    pngWidth: 1080,
-    pngHeight: 1080,
-    fileBaseName: 'kromaq-avatar-light-1080x1080',
+    pngWidth: 4096,
+    pngHeight: 4096,
+    fileBaseName: 'kromaq-avatar-light-4k',
     supportsSvg: true,
   },
   {
     id: 'wordmark-white-transparent',
-    title: 'Logo Complet KROMAQ (Alb · Transparent)',
+    title: 'Logo Complet KROMAQ (Alb · Transparent · 4K)',
     subtitle: 'Wordmark alb cu A geometric și Crystal Q pe fundal transparent',
     platforms: 'Video Outros · Prezentări Dark · Header Site · Parteneriate',
     previewBg: 'checker-dark',
-    pngWidth: 2400,
-    pngHeight: 640,
-    fileBaseName: 'kromaq-logo-alb-transparent',
+    pngWidth: 4800,
+    pngHeight: 1280,
+    fileBaseName: 'kromaq-logo-alb-transparent-4k',
     supportsSvg: true,
   },
   {
     id: 'wordmark-dark-transparent',
-    title: 'Logo Complet KROMAQ (Negru · Transparent)',
+    title: 'Logo Complet KROMAQ (Negru · Transparent · 4K)',
     subtitle: 'Wordmark obsidian (#06090E) cu Crystal Q pentru fundaluri deschise',
-    platforms: 'Contracte PDF · Antet Oferte · Print · Tricouri Albe',
+    platforms: 'Contracte PDF · Antet Oferte · Print · Materiale Promo',
     previewBg: 'checker-light',
-    pngWidth: 2400,
-    pngHeight: 640,
-    fileBaseName: 'kromaq-logo-negru-transparent',
+    pngWidth: 4800,
+    pngHeight: 1280,
+    fileBaseName: 'kromaq-logo-negru-transparent-4k',
     supportsSvg: true,
   },
   {
     id: 'full-tagline-dark',
-    title: 'Logo KROMAQ + Tagline (Dark Card)',
+    title: 'Logo KROMAQ + Tagline (Dark Card · 4K)',
     subtitle: 'Logo complet cu sloganul „SOCIAL MEDIA IN MOTION” pe fundal #06090E',
     platforms: 'Pitch Deck · Semnătură Email · Prezentări Clienți',
     previewBg: 'obsidian',
-    pngWidth: 2400,
-    pngHeight: 840,
-    fileBaseName: 'kromaq-logo-tagline-dark',
+    pngWidth: 4800,
+    pngHeight: 1680,
+    fileBaseName: 'kromaq-logo-tagline-dark-4k',
     supportsSvg: true,
   },
   {
     id: 'social-banner',
-    title: 'Banner Cover Social Media (1920×1080)',
-    subtitle: 'Cover pregătit pentru YouTube, LinkedIn, Facebook sau copertă prezentare',
+    title: 'Banner Cover Social Media (3840×2160 4K UHD)',
+    subtitle: 'Cover ultra-HD pregătit pentru YouTube, LinkedIn, Facebook sau copertă prezentare',
     platforms: 'YouTube Cover · LinkedIn Banner · Facebook Cover · Deck Cover',
     previewBg: 'obsidian',
-    pngWidth: 1920,
-    pngHeight: 1080,
-    fileBaseName: 'kromaq-banner-1920x1080',
+    pngWidth: 3840,
+    pngHeight: 2160,
+    fileBaseName: 'kromaq-banner-4k-uhd',
     supportsSvg: true,
   },
 ];
@@ -169,10 +171,10 @@ function getWordmarkGroup(textColor: string, qPrefix: string): string {
       <path fill-rule="evenodd" d="M134 19 C150 19 161 31 161 48 C161 65 150 77 134 77 C118 77 107 65 107 48 C107 31 118 19 134 19 Z M134 28.5 C123.5 28.5 117.2 36.5 117.2 48 C117.2 59.5 123.5 67.5 134 67.5 C144.5 67.5 150.8 59.5 150.8 48 C150.8 36.5 144.5 28.5 134 28.5 Z" fill="${textColor}" />
       <!-- M -->
       <path d="M172 76 V20 H185 L202 55 L219 20 H232 V76 H222 V37 L206 70 H198 L182 37 V76 H172 Z" fill="${textColor}" />
-      <!-- Stylized Chevron A without crossbar -->
-      <path d="M248 72.5 L268 23.5 L288 72.5" stroke="${textColor}" stroke-width="10" stroke-linecap="round" stroke-linejoin="miter" fill="none" />
+      <!-- Stylized Geometric Chevron A without crossbar (aligned to 20..76 cap height) -->
+      <path d="M242 76 L264 20 H276 L298 76 H287 L270 31.5 L253 76 H242 Z" fill="${textColor}" />
       <!-- Crystal Q Icon -->
-      <g transform="translate(300, 3) scale(0.88)">
+      <g transform="translate(306, 5) scale(0.86)">
         ${shapes}
       </g>
     </g>
@@ -183,14 +185,14 @@ export function buildLogoSvg(id: LogoVariantId): string {
   const { defs, shapes } = getCrystalQDefsAndGroup(`kmq-${id}`);
 
   if (id === 'icon-transparent') {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="1024" height="1024" fill="none">
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="4096" height="4096" fill="none">
   <defs>${defs}</defs>
   ${shapes}
 </svg>`;
   }
 
   if (id === 'avatar-dark') {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080" fill="none">
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="4096" height="4096" fill="none">
   <defs>
     ${defs}
     <radialGradient id="avatar-dark-bg" cx="50%" cy="50%" r="55%">
@@ -213,7 +215,7 @@ export function buildLogoSvg(id: LogoVariantId): string {
   }
 
   if (id === 'avatar-light') {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080" fill="none">
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="4096" height="4096" fill="none">
   <defs>
     ${defs}
     <radialGradient id="avatar-light-halo" cx="50%" cy="50%" r="45%">
@@ -230,21 +232,21 @@ export function buildLogoSvg(id: LogoVariantId): string {
   }
 
   if (id === 'wordmark-white-transparent') {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-18 -8 424 112" width="2400" height="640" fill="none">
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -6 426 108" width="4800" height="1280" fill="none">
   <defs>${defs}</defs>
   ${getWordmarkGroup('#FFFFFF', `kmq-${id}`)}
 </svg>`;
   }
 
   if (id === 'wordmark-dark-transparent') {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-18 -8 424 112" width="2400" height="640" fill="none">
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-16 -6 426 108" width="4800" height="1280" fill="none">
   <defs>${defs}</defs>
   ${getWordmarkGroup('#06090E', `kmq-${id}`)}
 </svg>`;
   }
 
   if (id === 'full-tagline-dark') {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="2400" height="840" fill="none">
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="4800" height="1680" fill="none">
   <defs>
     ${defs}
     <radialGradient id="full-dark-glow" cx="50%" cy="45%" r="55%">
@@ -253,16 +255,16 @@ export function buildLogoSvg(id: LogoVariantId): string {
     </radialGradient>
   </defs>
   <rect width="1200" height="420" fill="url(#full-dark-glow)" />
-  <g transform="translate(185, 86) scale(2.12)">
+  <g transform="translate(182, 86) scale(2.12)">
     ${getWordmarkGroup('#FFFFFF', `kmq-${id}`)}
   </g>
-  <text x="600" y="336" text-anchor="middle" fill="#22D3EE" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="22" font-weight="700" letter-spacing="8">SOCIAL MEDIA IN MOTION</text>
-  <text x="600" y="370" text-anchor="middle" fill="#94A3B8" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="600" letter-spacing="5">VIDEO  ·  WEB DESIGN  ·  PAID ADS  ·  LOCAL SEO</text>
+  <text x="600" y="336" text-anchor="middle" fill="#22D3EE" font-family="'DejaVu Sans', 'Liberation Sans', Arial, sans-serif" font-size="22" font-weight="700" letter-spacing="8">SOCIAL MEDIA IN MOTION</text>
+  <text x="600" y="372" text-anchor="middle" fill="#94A3B8" font-family="'DejaVu Sans', 'Liberation Sans', Arial, sans-serif" font-size="14" font-weight="600" letter-spacing="4">VIDEO PRODUCTION  ·  WEB DESIGN  ·  PAID ADS  ·  LOCAL SEO</text>
 </svg>`;
   }
 
-  // social-banner (1920x1080)
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080" fill="none">
+  // social-banner (3840x2160 4K UHD)
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="3840" height="2160" fill="none">
   <defs>
     ${defs}
     <radialGradient id="banner-bg" cx="50%" cy="48%" r="60%">
@@ -286,33 +288,36 @@ export function buildLogoSvg(id: LogoVariantId): string {
   <rect width="1920" height="1080" fill="url(#banner-grid)" />
   <rect width="1920" height="1080" fill="url(#banner-glow-1)" />
   <rect width="1920" height="1080" fill="url(#banner-glow-2)" />
-  <g transform="translate(465, 345) scale(2.55)">
+  <g transform="translate(460, 345) scale(2.55)">
     ${getWordmarkGroup('#FFFFFF', `kmq-${id}`)}
   </g>
-  <text x="960" y="655" text-anchor="middle" fill="#22D3EE" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="28" font-weight="700" letter-spacing="11">SOCIAL MEDIA IN MOTION</text>
-  <text x="960" y="704" text-anchor="middle" fill="#94A3B8" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="18" font-weight="500" letter-spacing="6">VIDEO PRODUCTION  ·  WEB DESIGN  ·  PAID ADS  ·  LOCAL SEO</text>
+  <text x="960" y="655" text-anchor="middle" fill="#22D3EE" font-family="'DejaVu Sans', 'Liberation Sans', Arial, sans-serif" font-size="28" font-weight="700" letter-spacing="10">SOCIAL MEDIA IN MOTION</text>
+  <text x="960" y="704" text-anchor="middle" fill="#94A3B8" font-family="'DejaVu Sans', 'Liberation Sans', Arial, sans-serif" font-size="18" font-weight="600" letter-spacing="5">VIDEO PRODUCTION  ·  WEB DESIGN  ·  PAID ADS  ·  LOCAL SEO</text>
 </svg>`;
+}
+
+function triggerBlobDownload(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
 export function downloadSvgFile(id: LogoVariantId, fileBaseName: string): void {
   const svgString = buildLogoSvg(id);
   const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${fileBaseName}.svg`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  triggerBlobDownload(blob, `${fileBaseName}.svg`);
 }
 
-export async function downloadPngFile(
+export async function renderPngBlob(
   id: LogoVariantId,
-  fileBaseName: string,
   width: number,
   height: number
-): Promise<void> {
+): Promise<Blob> {
   const svgString = buildLogoSvg(id);
   const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
   const url = URL.createObjectURL(svgBlob);
@@ -330,25 +335,23 @@ export async function downloadPngFile(
           reject(new Error('Canvas context unavailable'));
           return;
         }
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
         ctx.clearRect(0, 0, width, height);
         ctx.drawImage(img, 0, 0, width, height);
         URL.revokeObjectURL(url);
 
-        canvas.toBlob((pngBlob) => {
-          if (!pngBlob) {
-            reject(new Error('Failed to generate PNG'));
-            return;
-          }
-          const pngUrl = URL.createObjectURL(pngBlob);
-          const a = document.createElement('a');
-          a.href = pngUrl;
-          a.download = `${fileBaseName}.png`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          setTimeout(() => URL.revokeObjectURL(pngUrl), 1000);
-          resolve();
-        }, 'image/png', 1.0);
+        canvas.toBlob(
+          (pngBlob) => {
+            if (!pngBlob) {
+              reject(new Error('Failed to generate PNG'));
+              return;
+            }
+            resolve(pngBlob);
+          },
+          'image/png',
+          1.0
+        );
       } catch (err) {
         URL.revokeObjectURL(url);
         reject(err);
@@ -362,9 +365,55 @@ export async function downloadPngFile(
   });
 }
 
-export async function downloadAllLogosBatch(): Promise<void> {
+export async function downloadPngFile(
+  id: LogoVariantId,
+  fileBaseName: string,
+  width: number,
+  height: number
+): Promise<void> {
+  const blob = await renderPngBlob(id, width, height);
+  triggerBlobDownload(blob, `${fileBaseName}.png`);
+}
+
+export async function downloadBrandKitZip(): Promise<void> {
+  const zip = new JSZip();
+  const pngFolder = zip.folder('PNG-4K-UltraHD');
+  const svgFolder = zip.folder('SVG-Vector-Infinit');
+
   for (const spec of LOGO_ASSETS) {
-    await downloadPngFile(spec.id, spec.fileBaseName, spec.pngWidth, spec.pngHeight);
-    await new Promise((r) => setTimeout(r, 220));
+    const svgContent = buildLogoSvg(spec.id);
+    svgFolder?.file(`${spec.fileBaseName}.svg`, svgContent);
+
+    const pngBlob = await renderPngBlob(spec.id, spec.pngWidth, spec.pngHeight);
+    pngFolder?.file(`${spec.fileBaseName}.png`, pngBlob);
   }
+
+  // Include master identity sheet PNG if reachable
+  try {
+    const resp = await fetch('/assets/aistudio/1._Kromaq_identitate_vizuala__1dad45bf.png');
+    if (resp.ok) {
+      const sheetBlob = await resp.blob();
+      zip.file('kromaq-identitate-vizuala-completa.png', sheetBlob);
+    }
+  } catch {
+    // Ignore if unavailable
+  }
+
+  zip.file(
+    'GHID-UTILIZARE.txt',
+    `KROMAQ AGENCY - PACHET OFICIAL LOGO-URI (4K PNG + SVG VECTOR)\n================================================================\n\n` +
+      `1. PNG-4K-UltraHD/ -> Fisiere PNG la rezolutie 4K (4096px / 4800px / 3840x2160) gata pentru:\n` +
+      `   - Instagram, TikTok, YouTube, LinkedIn, WhatsApp Business (kromaq-avatar-dark-4k.png)\n` +
+      `   - Watermark Video in CapCut / Premiere / After Effects (kromaq-icon-q-transparent-4k.png)\n` +
+      `   - Banner YouTube / LinkedIn / Facebook (kromaq-banner-4k-uhd.png)\n` +
+      `   - Documente, contracte, prezentari (variantele alb/negru transparent)\n\n` +
+      `2. SVG-Vector-Infinit/ -> Fisiere vectoriale pure pentru Figma, Illustrator, Canva sau print la orice dimensiune.\n`
+  );
+
+  const zipBlob = await zip.generateAsync({
+    type: 'blob',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 9 },
+  });
+  triggerBlobDownload(zipBlob, 'kromaq-brand-kit-4k.zip');
 }
