@@ -64,6 +64,8 @@ import {
   Send,
   Radio,
   RefreshCw,
+  Palette,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { KromaqIcon } from './KromaqLogo';
 import { 
@@ -72,6 +74,14 @@ import {
   sendLeadNotification, 
   NotificationLog 
 } from '../utils/notificationService';
+import {
+  LOGO_ASSETS,
+  buildLogoSvg,
+  downloadSvgFile,
+  downloadPngFile,
+  downloadAllLogosBatch,
+  LogoAssetSpec,
+} from '../utils/logoExporter';
 
 interface FounderLeadsDashboardProps {
   isOpen: boolean;
@@ -88,7 +98,8 @@ type DashboardTab =
   | 'creators' 
   | 'contracts' 
   | 'analytics'
-  | 'notifications';
+  | 'notifications'
+  | 'logos';
 
 type Currency = 'EUR' | 'RON' | 'USD';
 
@@ -188,6 +199,8 @@ export const FounderLeadsDashboard: React.FC<FounderLeadsDashboardProps> = ({
     text: string;
   } | null>(null);
   const [customTestMessage, setCustomTestMessage] = useState<string>('');
+  const [downloadingLogoId, setDownloadingLogoId] = useState<string | null>(null);
+  const [batchDownloading, setBatchDownloading] = useState<boolean>(false);
 
   const refreshLeads = () => {
     setLeads(getStoredLeads());
@@ -860,6 +873,24 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                     <span>Metrici & Pipeline MRR</span>
                   </div>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('logos')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium transition-all cursor-pointer ${
+                    activeTab === 'logos'
+                      ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-300 border border-cyan-500/30 shadow-md font-bold'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Palette className="w-4 h-4 text-cyan-300" />
+                    <span>Logo-uri & Brand Kit</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">
+                    {LOGO_ASSETS.length + 1}
+                  </span>
+                </button>
               </div>
             </div>
 
@@ -983,6 +1014,7 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                   {activeTab === 'creators' && 'Rețeaua de Creatori UGC & Influenceri Cluj'}
                   {activeTab === 'contracts' && 'Generator Contracte B2B & Oferte Comerciale România'}
                   {activeTab === 'analytics' && 'Metrici Financiare, MRR & Rata de Conversie'}
+                  {activeTab === 'logos' && 'Pachet Oficial Logo-uri & Brand Kit Kromaq'}
                 </h3>
                 <span className="hidden sm:inline-block text-[10px] px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 font-mono">
                   Valută: {currency}
@@ -2117,6 +2149,173 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                     </table>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 10: BRAND KIT & LOGO DOWNLOADS */}
+          {activeTab === 'logos' && (
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+              {/* Top Banner with Batch Download */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-[#0a101f] to-[#070b14] border border-cyan-500/30 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                <div className="space-y-1.5">
+                  <div className="text-[11px] font-mono uppercase tracking-wider text-cyan-400 font-bold">
+                    Export Vectorial SVG & High-Res PNG
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-black font-display text-white">
+                    Toate Logo-urile Oficiale KROMAQ
+                  </h3>
+                  <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                    Descarcă rapid orice variantă pentru Instagram, TikTok, YouTube, LinkedIn, editare video (CapCut / Premiere / After Effects), documente oficiale sau materiale print. Formatele SVG se redimensionează infinit fără pierdere de calitate.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={batchDownloading}
+                  onClick={async () => {
+                    setBatchDownloading(true);
+                    try {
+                      await downloadAllLogosBatch();
+                    } finally {
+                      setBatchDownloading(false);
+                    }
+                  }}
+                  className="shrink-0 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer disabled:opacity-50"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>{batchDownloading ? 'Se descarcă pachetul...' : 'Descarcă Toate (PNG HD)'}</span>
+                </button>
+              </div>
+
+              {/* Grid of Generated Vector + PNG Logo Variants */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {LOGO_ASSETS.map((asset: LogoAssetSpec) => {
+                  const previewSvg = buildLogoSvg(asset.id);
+                  const previewDataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
+                  const bgClass =
+                    asset.previewBg === 'white'
+                      ? 'bg-white border-slate-300'
+                      : asset.previewBg === 'obsidian'
+                      ? 'bg-[#06090e] border-slate-800'
+                      : asset.previewBg === 'checker-light'
+                      ? 'bg-slate-200 border-slate-300'
+                      : 'bg-[#0b1220] border-slate-800';
+
+                  return (
+                    <div
+                      key={asset.id}
+                      className="p-5 rounded-2xl bg-[#090e18] border border-slate-800 hover:border-cyan-500/40 transition-all flex flex-col justify-between gap-4 shadow-lg"
+                    >
+                      <div className="space-y-3">
+                        {/* Visual Preview Box */}
+                        <div
+                          className={`h-44 rounded-xl border ${bgClass} flex items-center justify-center p-4 overflow-hidden relative`}
+                          style={
+                            asset.previewBg.startsWith('checker')
+                              ? {
+                                  backgroundImage:
+                                    asset.previewBg === 'checker-light'
+                                      ? 'radial-gradient(#cbd5e1 1px, transparent 1px)'
+                                      : 'radial-gradient(#1e293b 1px, transparent 1px)',
+                                  backgroundSize: '14px 14px',
+                                }
+                              : undefined
+                          }
+                        >
+                          <img
+                            src={previewDataUrl}
+                            alt={asset.title}
+                            className="max-h-full max-w-full object-contain drop-shadow-md"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between gap-2">
+                            <h4 className="text-sm font-bold text-white font-display">{asset.title}</h4>
+                            <span className="text-[10px] font-mono text-cyan-400 shrink-0">
+                              {asset.pngWidth}×{asset.pngHeight}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-1">{asset.subtitle}</p>
+                          <div className="text-[11px] text-slate-500 font-mono mt-1.5">
+                            Recomandat: {asset.platforms}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Download Buttons */}
+                      <div className="flex items-center gap-2.5 pt-2 border-t border-slate-800/80">
+                        <button
+                          type="button"
+                          disabled={downloadingLogoId === asset.id}
+                          onClick={async () => {
+                            setDownloadingLogoId(asset.id);
+                            try {
+                              await downloadPngFile(asset.id, asset.fileBaseName, asset.pngWidth, asset.pngHeight);
+                            } finally {
+                              setDownloadingLogoId(null);
+                            }
+                          }}
+                          className="flex-1 py-2 px-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>{downloadingLogoId === asset.id ? 'Export...' : 'Descarcă PNG'}</span>
+                        </button>
+
+                        {asset.supportsSvg && (
+                          <button
+                            type="button"
+                            onClick={() => downloadSvgFile(asset.id, asset.fileBaseName)}
+                            className="py-2 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>SVG Vector</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Master Visual Identity Sheet Asset from public/assets */}
+                <div className="p-5 rounded-2xl bg-[#090e18] border border-slate-800 hover:border-cyan-500/40 transition-all flex flex-col justify-between gap-4 shadow-lg">
+                  <div className="space-y-3">
+                    <div className="h-44 rounded-xl border border-slate-800 bg-[#05080f] flex items-center justify-center p-2 overflow-hidden">
+                      <img
+                        src="/assets/aistudio/1._Kromaq_identitate_vizuala__1dad45bf.png"
+                        alt="Kromaq Master Visual Identity Sheet"
+                        className="max-h-full max-w-full object-contain rounded-lg"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <h4 className="text-sm font-bold text-white font-display flex items-center gap-1.5">
+                          <ImageIcon className="w-3.5 h-3.5 text-cyan-400" />
+                          <span>Planșă Identitate Vizuală Completă</span>
+                        </h4>
+                        <span className="text-[10px] font-mono text-cyan-400 shrink-0">PNG Original</span>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Prezentarea completă de identitate vizuală, papetărie și mockup-uri Kromaq.
+                      </p>
+                      <div className="text-[11px] text-slate-500 font-mono mt-1.5">
+                        Recomandat: Prezentări Clienți · Arhivă Brand · Referință Design
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2.5 pt-2 border-t border-slate-800/80">
+                    <a
+                      href="/assets/aistudio/1._Kromaq_identitate_vizuala__1dad45bf.png"
+                      download="kromaq-identitate-vizuala-completa.png"
+                      className="flex-1 py-2 px-3 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Descarcă PNG Original</span>
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
           )}

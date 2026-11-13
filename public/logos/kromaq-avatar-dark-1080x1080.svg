@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080" fill="none">
+  <defs>
+    
+    <linearGradient id="kmq-avatar-dark-top-left" x1="20" y1="20" x2="50" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    <linearGradient id="kmq-avatar-dark-top-right" x1="50" y1="10" x2="80" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00F2FE" />
+      <stop offset="100%" stop-color="#38BDF8" />
+    </linearGradient>
+    <linearGradient id="kmq-avatar-dark-center" x1="35" y1="35" x2="65" y2="65" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#E0F2FE" />
+      <stop offset="40%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <linearGradient id="kmq-avatar-dark-right" x1="55" y1="30" x2="85" y2="65" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#67E8F9" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+    <linearGradient id="kmq-avatar-dark-bottom-left" x1="25" y1="65" x2="50" y2="85" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1D4ED8" />
+      <stop offset="100%" stop-color="#1E1B4B" />
+    </linearGradient>
+    <linearGradient id="kmq-avatar-dark-bottom-right" x1="50" y1="55" x2="80" y2="85" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#3B82F6" />
+      <stop offset="60%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+    <linearGradient id="kmq-avatar-dark-tail" x1="60" y1="70" x2="95" y2="95" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00F2FE" />
+      <stop offset="50%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#9333EA" />
+    </linearGradient>
+    <filter id="kmq-avatar-dark-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  
+    <radialGradient id="avatar-dark-bg" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#0e223d" />
+      <stop offset="45%" stop-color="#08101e" />
+      <stop offset="100%" stop-color="#06090e" />
+    </radialGradient>
+    <radialGradient id="avatar-cyan-halo" cx="50%" cy="50%" r="42%">
+      <stop offset="0%" stop-color="#00F2FE" stop-opacity="0.28" />
+      <stop offset="60%" stop-color="#3B82F6" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#06090e" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1080" height="1080" fill="url(#avatar-dark-bg)" />
+  <circle cx="540" cy="540" r="440" fill="url(#avatar-cyan-halo)" />
+  <g transform="translate(185, 185) scale(7.1)">
+    
+    <polygon points="50,10 78,26 50,42 22,26" fill="url(#kmq-avatar-dark-top-right)" opacity="0.95" />
+    <polygon points="22,26 50,42 36,60 12,48" fill="url(#kmq-avatar-dark-top-left)" />
+    <polygon points="78,26 88,52 64,62 50,42" fill="url(#kmq-avatar-dark-right)" />
+    <polygon points="50,42 64,62 50,75 36,60" fill="url(#kmq-avatar-dark-center)" />
+    <polygon points="12,48 36,60 50,75 28,86" fill="url(#kmq-avatar-dark-bottom-left)" />
+    <polygon points="50,75 64,62 76,72 58,84" fill="url(#kmq-avatar-dark-bottom-right)" />
+    <polygon points="62,65 80,68 94,88 78,92 68,78" fill="url(#kmq-avatar-dark-tail)" filter="url(#kmq-avatar-dark-glow)" />
+    <line x1="50" y1="10" x2="50" y2="42" stroke="#E0F2FE" stroke-width="1.2" stroke-opacity="0.8" />
+    <line x1="50" y1="42" x2="12" y2="48" stroke="#7DD3FC" stroke-width="1" stroke-opacity="0.6" />
+    <line x1="50" y1="42" x2="88" y2="52" stroke="#BAE6FD" stroke-width="1" stroke-opacity="0.7" />
+    <line x1="50" y1="42" x2="50" y2="75" stroke="#93C5FD" stroke-width="1" stroke-opacity="0.8" />
+    <line x1="50" y1="75" x2="28" y2="86" stroke="#60A5FA" stroke-width="0.8" stroke-opacity="0.6" />
+    <line x1="64" y1="62" x2="94" y2="88" stroke="#C084FC" stroke-width="1.5" stroke-opacity="0.9" />
+  
+  </g>
+</svg>
