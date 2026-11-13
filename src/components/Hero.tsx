@@ -61,7 +61,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenBooking, onExploreWork }) => {
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full text-sm font-medium text-slate-200 bg-[#0d1424]/80 hover:bg-[#131d33] border border-slate-700/60 hover:border-cyan-500/40 backdrop-blur-md transition-all cursor-pointer"
           >
             <Play className="w-4 h-4 text-cyan-400 fill-cyan-400/20" />
-            <span>Explore Case Studies</span>
+            <span>How We Work</span>
           </button>
         </div>
 
