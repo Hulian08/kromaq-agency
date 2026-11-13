@@ -58,10 +58,39 @@ export const Hero: React.FC<HeroProps> = ({ onOpenBooking, onExploreWork }) => {
           <button
             type="button"
             onClick={onExploreWork}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full text-sm font-medium text-slate-200 bg-[#0d1424]/80 hover:bg-[#131d33] border border-slate-700/60 hover:border-cyan-500/40 backdrop-blur-md transition-all cursor-pointer"
+            className="group relative w-full sm:w-auto inline-flex items-center justify-center rounded-full p-[1.5px] overflow-hidden shadow-[0_0_24px_rgba(0,242,254,0.16)] hover:shadow-[0_0_38px_rgba(0,242,254,0.42)] hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
           >
-            <Play className="w-4 h-4 text-cyan-400 fill-cyan-400/20" />
-            <span>How We Work</span>
+            {/* Orbiting conic light beam along the pill perimeter */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 left-1/2 w-[260%] aspect-square animate-border-orbit opacity-85 group-hover:opacity-100 transition-opacity duration-200"
+              style={{
+                background:
+                  'conic-gradient(from 0deg, transparent 0deg, transparent 235deg, rgba(0,242,254,0.4) 275deg, #00F2FE 315deg, #e0f2fe 338deg, #818cf8 352deg, transparent 360deg)',
+              }}
+            />
+
+            {/* Inner dark glass shell */}
+            <span className="relative w-full inline-flex items-center justify-center gap-3 px-7 py-3.5 rounded-full bg-[#09101d]/95 group-hover:bg-[#0e182c] backdrop-blur-xl border border-cyan-400/15 text-sm font-semibold text-slate-100 group-hover:text-white transition-colors duration-200 overflow-hidden">
+              {/* Sweeping specular glass sheen */}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-transparent via-cyan-200/20 to-transparent animate-cta-sheen"
+              />
+
+              {/* Play icon with expanding kinetic halo ring */}
+              <span className="relative flex items-center justify-center w-6 h-6 rounded-full bg-cyan-400/15 border border-cyan-400/35 group-hover:bg-cyan-400/25 group-hover:border-cyan-300/60 transition-colors duration-200 shrink-0">
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 rounded-full border border-cyan-400/60 animate-play-ring"
+                />
+                <Play className="w-3 h-3 text-cyan-300 fill-cyan-300/40 translate-x-[0.5px] group-hover:scale-110 transition-transform duration-200" />
+              </span>
+
+              <span className="whitespace-nowrap tracking-wide">How We Work</span>
+
+              <ArrowRight className="w-4 h-4 text-cyan-300/80 group-hover:text-cyan-200 animate-arrow-nudge group-hover:translate-x-1 transition-transform duration-200 shrink-0" />
+            </span>
           </button>
         </div>
 
