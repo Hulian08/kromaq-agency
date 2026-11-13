@@ -114,17 +114,18 @@ export default function App() {
 
         {/* Services Bento Grid */}
         <ServicesBento
-          onSelectService={(service) => {
-            setActiveTier(service);
+          onSelectService={() => {
+            setActiveTier('');
+            setActiveBudget(undefined);
             handleScrollToSection('contact');
           }}
         />
 
         {/* How We Work - 3-Step Implementation */}
-        <ProcessTimeline onOpenBooking={() => handleOpenBooking('How We Work Strategy')} />
+        <ProcessTimeline onOpenBooking={() => handleOpenBooking()} />
 
         {/* Kromaq Standard & Case Studies */}
-        <WorkAndResults onBookNow={() => handleOpenBooking('Free 20-Min Strategy Audit')} />
+        <WorkAndResults onBookNow={() => handleOpenBooking()} />
 
         {/* Pricing Packages */}
         <PricingTiers onSelectTier={handleSelectTierFromPricing} />

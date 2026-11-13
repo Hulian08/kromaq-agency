@@ -3,12 +3,29 @@ import {
   getStoredLeads, 
   updateLeadStatus, 
   updateLeadNotes,
+  updateLeadManualConfig,
   deleteLead, 
   exportLeadsToCSV, 
   saveNewLead,
   Lead, 
   LeadStatus 
 } from '../utils/leadStore';
+import {
+  AGENCY_SERVICES,
+  SERVICE_PACKAGES,
+  DELIVERABLE_STATUS_META,
+  ORDER_STATUS_META,
+  getStoredOrders,
+  createClientOrder,
+  updateClientOrderOverallStatus,
+  updateClientOrderServiceStatus,
+  updateClientOrderServicesList,
+  deleteClientOrder,
+  ClientOrder,
+  AgencyServiceId,
+  DeliverableStatus,
+  OrderOverallStatus,
+} from '../utils/ordersStore';
 import {
   INITIAL_SHOOTS,
   INITIAL_RETAINERS,
@@ -66,6 +83,11 @@ import {
   RefreshCw,
   Palette,
   Image as ImageIcon,
+  Package,
+  Sliders,
+  CheckSquare,
+  Square,
+  Wrench,
 } from 'lucide-react';
 import { KromaqIcon } from './KromaqLogo';
 import { 
@@ -91,6 +113,7 @@ interface FounderLeadsDashboardProps {
 
 type DashboardTab = 
   | 'leads' 
+  | 'orders'
   | 'schedule' 
   | 'retainers' 
   | 'shoots' 
@@ -127,16 +150,68 @@ export const FounderLeadsDashboard: React.FC<FounderLeadsDashboardProps> = ({
   const [newEmail, setNewEmail] = useState('');
   const [newBrandName, setNewBrandName] = useState('');
   const [newSocialHandle, setNewSocialHandle] = useState('');
-  const [newBudget, setNewBudget] = useState('€3,800 — €6,900/mo');
+  const [newBudget, setNewBudget] = useState('€1,000 — €2,500/mo');
   const [newSlot, setNewSlot] = useState('Mâine, 14:00 EET');
-  const [newTier, setNewTier] = useState('Motion & Performance');
+  const [newTier, setNewTier] = useState('Pachet Complet — Toate Serviciile');
+  const [newSelectedPackage, setNewSelectedPackage] = useState<string>('all_inclusive');
+  const [newSelectedServices, setNewSelectedServices] = useState<AgencyServiceId[]>([
+    'web_design',
+    'meta_ads',
+    'reels_video',
+    'local_seo',
+    'logo_branding',
+    'copywriting_scripts',
+  ]);
   const [newMessage, setNewMessage] = useState('');
+
+  // Orders & Manual Service Configurator State
+  const [orders, setOrders] = useState<ClientOrder[]>(() => getStoredOrders());
+  const [orderFilterStatus, setOrderFilterStatus] = useState<string>('all');
+  const [isOrderBuilderOpen, setIsOrderBuilderOpen] = useState<boolean>(true);
+  const [editingOrderServicesId, setEditingOrderServicesId] = useState<string | null>(null);
+  const [selectedLeadForOrder, setSelectedLeadForOrder] = useState<string>('');
+  const [ordClientName, setOrdClientName] = useState('');
+  const [ordBrandName, setOrdBrandName] = useState('');
+  const [ordEmail, setOrdEmail] = useState('');
+  const [ordPhone, setOrdPhone] = useState('');
+  const [ordPackageId, setOrdPackageId] = useState<string>('all_inclusive');
+  const [ordSelectedServices, setOrdSelectedServices] = useState<AgencyServiceId[]>([
+    'web_design',
+    'meta_ads',
+    'reels_video',
+    'local_seo',
+    'logo_branding',
+    'copywriting_scripts',
+  ]);
+  const [ordPriceEur, setOrdPriceEur] = useState<number>(2400);
+  const [ordDeadline, setOrdDeadline] = useState('15 Zile / Luna Curentă');
+  const [ordOverallStatus, setOrdOverallStatus] = useState<OrderOverallStatus>('in_productie');
+  const [ordNotes, setOrdNotes] = useState('');
+
+  // Editable Retainers State (with manual service toggles per retainer)
+  const [retainers, setRetainers] = useState<ClientRetainer[]>(INITIAL_RETAINERS);
+  const [retainerServicesMap, setRetainerServicesMap] = useState<Record<string, AgencyServiceId[]>>({
+    'ret-1': ['reels_video', 'meta_ads', 'copywriting_scripts'],
+    'ret-2': ['reels_video', 'local_seo'],
+    'ret-3': ['web_design', 'meta_ads', 'reels_video'],
+    'ret-4': ['reels_video', 'logo_branding'],
+  });
 
   // Contract Generator State
   const [selectedContractLead, setSelectedContractLead] = useState<Lead | null>(null);
   const [contractType, setContractType] = useState<'retainer_full' | 'video_production' | 'ads_management'>('retainer_full');
   const [contractCustomBrand, setContractCustomBrand] = useState('Brand Partener SRL');
   const [contractCustomCui, setContractCustomCui] = useState('RO48291032');
+  const [contractPackageId, setContractPackageId] = useState<string>('all_inclusive');
+  const [contractSelectedServices, setContractSelectedServices] = useState<AgencyServiceId[]>([
+    'web_design',
+    'meta_ads',
+    'reels_video',
+    'local_seo',
+    'logo_branding',
+    'copywriting_scripts',
+  ]);
+  const [contractPriceEur, setContractPriceEur] = useState<number>(2400);
   const [contractCopied, setContractCopied] = useState(false);
 
   // New Shoot Form State
@@ -206,22 +281,30 @@ export const FounderLeadsDashboard: React.FC<FounderLeadsDashboardProps> = ({
     setLeads(getStoredLeads());
   };
 
+  const refreshOrders = () => {
+    setOrders(getStoredOrders());
+  };
+
   useEffect(() => {
     if (isOpen) {
       refreshLeads();
+      refreshOrders();
       setNotificationLogs(getNotificationLogs());
     }
   }, [isOpen]);
 
   useEffect(() => {
     const handleUpdate = () => refreshLeads();
+    const handleOrdersUpdate = () => refreshOrders();
     const handleNotifUpdate = () => setNotificationLogs(getNotificationLogs());
     window.addEventListener('kromaq_new_lead', handleUpdate);
     window.addEventListener('kromaq_leads_updated', handleUpdate);
+    window.addEventListener('kromaq_orders_updated', handleOrdersUpdate);
     window.addEventListener('kromaq_notifications_updated', handleNotifUpdate);
     return () => {
       window.removeEventListener('kromaq_new_lead', handleUpdate);
       window.removeEventListener('kromaq_leads_updated', handleUpdate);
+      window.removeEventListener('kromaq_orders_updated', handleOrdersUpdate);
       window.removeEventListener('kromaq_notifications_updated', handleNotifUpdate);
     };
   }, []);
@@ -420,6 +503,12 @@ export const FounderLeadsDashboard: React.FC<FounderLeadsDashboardProps> = ({
     e.preventDefault();
     if (!newFullName || !newEmail || !newBrandName) return;
 
+    const pkgDef = SERVICE_PACKAGES.find((p) => p.id === newSelectedPackage);
+    const initialStatuses: Record<string, string> = {};
+    newSelectedServices.forEach((sid) => {
+      initialStatuses[sid] = 'de_inceput';
+    });
+
     saveNewLead({
       fullName: newFullName,
       email: newEmail,
@@ -427,7 +516,11 @@ export const FounderLeadsDashboard: React.FC<FounderLeadsDashboardProps> = ({
       socialHandle: newSocialHandle || undefined,
       budget: newBudget,
       selectedSlot: newSlot,
-      tier: newTier,
+      tier: pkgDef ? pkgDef.name : newTier,
+      selectedPackage: newSelectedPackage,
+      selectedServices: newSelectedServices,
+      serviceStatuses: initialStatuses,
+      orderStatus: 'audit_discutie',
       message: newMessage,
     });
 
@@ -438,6 +531,115 @@ export const FounderLeadsDashboard: React.FC<FounderLeadsDashboardProps> = ({
     setNewMessage('');
     setIsAddModalOpen(false);
     refreshLeads();
+  };
+
+  const handleApplyOrderPackagePreset = (pkgId: string) => {
+    setOrdPackageId(pkgId);
+    const pkg = SERVICE_PACKAGES.find((p) => p.id === pkgId);
+    if (pkg) {
+      if (pkg.serviceIds.length > 0) {
+        setOrdSelectedServices([...pkg.serviceIds]);
+      }
+      setOrdPriceEur(pkg.suggestedPriceEur);
+    }
+  };
+
+  const handleToggleOrderBuilderService = (serviceId: AgencyServiceId) => {
+    setOrdPackageId('custom');
+    setOrdSelectedServices((prev) =>
+      prev.includes(serviceId) ? prev.filter((id) => id !== serviceId) : [...prev, serviceId]
+    );
+  };
+
+  const handleSelectLeadIntoOrderBuilder = (leadId: string) => {
+    setSelectedLeadForOrder(leadId);
+    const lead = leads.find((l) => l.id === leadId);
+    if (!lead) return;
+    setOrdClientName(lead.fullName);
+    setOrdBrandName(lead.brandName);
+    setOrdEmail(lead.email);
+    if (lead.selectedPackage) {
+      setOrdPackageId(lead.selectedPackage);
+      const pkg = SERVICE_PACKAGES.find((p) => p.id === lead.selectedPackage);
+      if (pkg) setOrdPriceEur(pkg.suggestedPriceEur);
+    }
+    if (lead.selectedServices && lead.selectedServices.length > 0) {
+      setOrdSelectedServices(lead.selectedServices as AgencyServiceId[]);
+    }
+    if (lead.notes) setOrdNotes(lead.notes);
+  };
+
+  const handleCreateOrderSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ordClientName.trim() || !ordBrandName.trim() || ordSelectedServices.length === 0) return;
+
+    const pkgDef = SERVICE_PACKAGES.find((p) => p.id === ordPackageId);
+    const pkgName = pkgDef ? pkgDef.name : 'Selecție Manuală Personalizată';
+
+    const items = ordSelectedServices.map((sid) => {
+      const def = AGENCY_SERVICES.find((a) => a.id === sid);
+      return {
+        serviceId: sid,
+        label: def ? def.label : sid,
+        status: 'de_inceput' as DeliverableStatus,
+        details: def?.defaultNote,
+      };
+    });
+
+    const updated = createClientOrder({
+      clientName: ordClientName.trim(),
+      brandName: ordBrandName.trim(),
+      email: ordEmail.trim() || 'contact@client.ro',
+      phone: ordPhone.trim() || undefined,
+      packageId: ordPackageId,
+      packageName: pkgName,
+      monthlyPriceEur: Number(ordPriceEur) || 0,
+      deadline: ordDeadline.trim() || 'Luna curentă',
+      overallStatus: ordOverallStatus,
+      services: items,
+      notes: ordNotes.trim(),
+    });
+    setOrders(updated);
+    setOrdClientName('');
+    setOrdBrandName('');
+    setOrdEmail('');
+    setOrdPhone('');
+    setOrdNotes('');
+    setSelectedLeadForOrder('');
+  };
+
+  const handlePromoteLeadToOrder = (lead: Lead) => {
+    const pkgId = lead.selectedPackage || 'all_inclusive';
+    const pkgDef = SERVICE_PACKAGES.find((p) => p.id === pkgId);
+    const serviceIds = (
+      lead.selectedServices && lead.selectedServices.length > 0
+        ? lead.selectedServices
+        : pkgDef?.serviceIds || ['web_design', 'meta_ads', 'reels_video', 'local_seo']
+    ) as AgencyServiceId[];
+
+    const updated = createClientOrder({
+      clientName: lead.fullName,
+      brandName: lead.brandName,
+      email: lead.email,
+      packageId: pkgId,
+      packageName: pkgDef ? pkgDef.name : lead.tier || 'Pachet Personalizat',
+      monthlyPriceEur: pkgDef?.suggestedPriceEur || 1850,
+      deadline: '14 Zile de la start',
+      overallStatus: (lead.orderStatus as OrderOverallStatus) || 'in_productie',
+      services: serviceIds.map((sid) => {
+        const def = AGENCY_SERVICES.find((a) => a.id === sid);
+        const st = (lead.serviceStatuses?.[sid] as DeliverableStatus) || 'de_inceput';
+        return {
+          serviceId: sid,
+          label: def ? def.label : sid,
+          status: st,
+          details: def?.defaultNote,
+        };
+      }),
+      notes: lead.notes || lead.message || '',
+    });
+    setOrders(updated);
+    setActiveTab('orders');
   };
 
   const handleSimulateAndNotify = async (customBrandName?: string) => {
@@ -584,7 +786,16 @@ Garanție: Onboarding operațional în 14 zile.`;
   const handleCopyContract = () => {
     const brand = selectedContractLead ? selectedContractLead.brandName : contractCustomBrand;
     const clientEmail = selectedContractLead ? selectedContractLead.email : 'contact@client.ro';
-    const contractText = `CONTRACT DE PRESTĂRI SERVICII MARKETING DIGITAL & PRODUCȚIE VIDEO
+    const selectedServiceLines = contractSelectedServices
+      .map((sid, idx) => {
+        const def = AGENCY_SERVICES.find((a) => a.id === sid);
+        return `${String.fromCharCode(97 + idx)}) ${def ? `${def.label} — ${def.defaultNote}` : sid};`;
+      })
+      .join('\n');
+    const valRon = Math.round(contractPriceEur * 4.97);
+    const valUsd = Math.round(contractPriceEur * 1.08);
+
+    const contractText = `CONTRACT DE PRESTĂRI SERVICII MARKETING DIGITAL & DESIGN
 Nr. KMQ-${new Date().getFullYear()}/${Math.floor(1000 + Math.random() * 9000)} încheiat în Cluj-Napoca la data de ${new Date().toLocaleDateString('ro-RO')}
 
 I. PĂRȚILE CONTRACTANTE
@@ -592,18 +803,15 @@ I. PĂRȚILE CONTRACTANTE
 și
 2. ${brand.toUpperCase()}, CUI/CIF ${contractCustomCui}, e-mail: ${clientEmail}, reprezentată legal prin administrator, denumită în continuare BENEFICIAR.
 
-II. OBIECTUL CONTRACTULUI
-Prestatorul se obligă să asigure servicii de:
-a) Producție conținut video nativ vertical (Reels / TikTok / Shorts) la standard cinema (4K ProRes pe echipamente Sony Cinema Line);
-b) Sesiuni de filmare organizate la locația Beneficiarului sau în studioul Kromaq din Cluj-Napoca;
-c) Post-producție completă: editare dinamică, animație 3D, sound design imersiv și color grading profesional;
-d) Management campanii plătite Meta Ads & TikTok Ads, optimizare ROAS și raportare săptămânală.
+II. OBIECTUL CONTRACTULUI (SERVICII SELECTATE)
+Prestatorul se obligă să asigure următoarele servicii:
+${selectedServiceLines || 'a) Pachet complet marketing digital & producție video.'}
 
 III. PREȚUL ȘI MODALITATEA DE PLATĂ
-Valoarea lunară a serviciilor este de ${currency === 'RON' ? '34.200 RON + TVA' : currency === 'EUR' ? '6.900 EUR + TVA' : '$7,500 + TAX'}, facturată la începutul fiecărei perioade contractuale. Factura se transmite electronic prin sistemul național RO e-Factura.
+Valoarea lunară a serviciilor este de ${currency === 'RON' ? `${valRon.toLocaleString()} RON + TVA` : currency === 'EUR' ? `${contractPriceEur.toLocaleString()} EUR + TVA` : `$${valUsd.toLocaleString()} + TAX`}, facturată la începutul fiecărei perioade contractuale prin sistemul național RO e-Factura.
 
-IV. TRANSFERUL DREPTURILOR DE AUTOR ȘI CONFIDENȚIALITATE (NDA)
-Drepturile neexclusive de utilizare comercială a conținutului final livrat se transferă Beneficiarului integral după achitarea facturii aferente. Părțile convin să păstreze confidențialitatea tuturor datelor tehnice, financiare și strategiilor de creștere.
+IV. DREPTURI DE AUTOR ȘI CONFIDENȚIALITATE (NDA)
+Drepturile comerciale de utilizare a materialelor finale (website, logo, video Reels) se transferă Beneficiarului integral după achitarea facturii aferente.
 
 Semnat în 2 exemplare originale,
 PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
@@ -724,6 +932,24 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
 
                 <button
                   type="button"
+                  onClick={() => setActiveTab('orders')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium transition-all cursor-pointer ${
+                    activeTab === 'orders'
+                      ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/10 text-cyan-300 border border-cyan-500/30 shadow-md font-bold'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Package className="w-4 h-4 text-amber-400" />
+                    <span>Comenzi &amp; Pachete</span>
+                  </div>
+                  <span className="px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-mono font-bold">
+                    {orders.length}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setActiveTab('notifications')}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl font-medium transition-all cursor-pointer ${
                     activeTab === 'notifications'
@@ -773,7 +999,7 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                     <span>Retainere Active</span>
                   </div>
                   <span className="text-[10px] font-mono text-purple-300 font-bold">
-                    {INITIAL_RETAINERS.length} branduri
+                    {retainers.length} branduri
                   </span>
                 </button>
               </div>
@@ -1005,14 +1231,15 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base sm:text-lg font-bold font-display text-white">
-                  {activeTab === 'leads' && 'Panou Inbound Leads & Prospectare'}
+                  {activeTab === 'leads' && 'Panou Inbound Leads & Selector Servicii Manual'}
+                  {activeTab === 'orders' && 'Configurator Pachete & Status Comenzi (Web, Reels, Logo, Ads)'}
                   {activeTab === 'notifications' && 'Hub Conectivitate & Notificări Email'}
-                  {activeTab === 'schedule' && 'Calendar Apeluri & Ședințe Strategice'}
-                  {activeTab === 'retainers' && 'Retainere Lunare & Livrabile Active'}
+                  {activeTab === 'schedule' && 'Calendar Apeluri & Configurare Post-Apel'}
+                  {activeTab === 'retainers' && 'Retainere Lunare & Selector Livrabile Active'}
                   {activeTab === 'shoots' && 'Planificator Filmări & Producție Video Cluj-Napoca'}
                   {activeTab === 'ads_roas' && 'Performanță Meta Ads & TikTok Ads (ROAS)'}
                   {activeTab === 'creators' && 'Rețeaua de Creatori UGC & Influenceri Cluj'}
-                  {activeTab === 'contracts' && 'Generator Contracte B2B & Oferte Comerciale România'}
+                  {activeTab === 'contracts' && 'Generator Contracte B2B & Configurator Servicii'}
                   {activeTab === 'analytics' && 'Metrici Financiare, MRR & Rata de Conversie'}
                   {activeTab === 'logos' && 'Pachet Oficial Logo-uri & Brand Kit Kromaq'}
                 </h3>
@@ -1032,7 +1259,6 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
 
             {/* Quick Global Action Buttons */}
             <div className="flex items-center gap-2">
-              {/* Permanent Email Simulation & Test Button */}
               <button
                 type="button"
                 onClick={() => handleSimulateAndNotify()}
@@ -1044,6 +1270,17 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                 <Send className="w-3.5 h-3.5 text-emerald-400" />
                 <span>{isSimulatingNotification ? 'Se transmite...' : 'Simulează & Testează Email'}</span>
               </button>
+
+              {activeTab === 'orders' && (
+                <button
+                  type="button"
+                  onClick={() => setIsOrderBuilderOpen((prev) => !prev)}
+                  className="px-3 py-1.5 rounded-xl bg-amber-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-md hover:brightness-110 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{isOrderBuilderOpen ? 'Ascunde Configurator' : 'Comandă / Pachet Nou'}</span>
+                </button>
+              )}
 
               {activeTab === 'shoots' && (
                 <button
@@ -1277,55 +1514,681 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                           </div>
                         </div>
 
-                        {/* Founder Notes Bar */}
-                        <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
-                          {editingNotesId === lead.id ? (
-                            <div className="w-full flex items-center gap-2">
-                              <input
-                                type="text"
-                                value={notesText}
-                                onChange={(e) => setNotesText(e.target.value)}
-                                placeholder="Notă internă (ex: Au nevoie de 24 Reels/lună, studio în Cluj, buget flexibil)..."
-                                className="flex-1 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleSaveNotes(lead.id)}
-                                className="px-3 py-1.5 rounded-lg bg-cyan-400 text-slate-950 font-bold text-xs"
-                              >
-                                Salvează
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setEditingNotesId(null)}
-                                className="px-2 py-1.5 text-slate-400 hover:text-white"
-                              >
-                                Anulează
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="w-full flex items-center justify-between">
-                              <div className="text-slate-400 text-xs flex items-center gap-1.5">
-                                <span className="text-cyan-400 font-mono font-semibold">Notă Fondator:</span>
-                                <span>{lead.notes || 'Nicio notă adăugată.'}</span>
+                            {/* Manual Package & Services Selector directly on each Lead card */}
+                            <div className="pt-2 border-t border-slate-800/70 space-y-2.5">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="text-[10px] font-mono uppercase tracking-wider text-amber-300 font-bold flex items-center gap-1">
+                                    <Sliders className="w-3 h-3" /> Selector Post-Apel:
+                                  </span>
+
+                                  {/* Quick Package Selector per Lead */}
+                                  <select
+                                    value={lead.selectedPackage || ''}
+                                    onChange={(e) => {
+                                      const pkgId = e.target.value;
+                                      const pkg = SERVICE_PACKAGES.find((p) => p.id === pkgId);
+                                      const nextIds = pkg
+                                        ? pkg.serviceIds.length > 0
+                                          ? [...pkg.serviceIds]
+                                          : lead.selectedServices || []
+                                        : [];
+                                      const nextStatuses = { ...(lead.serviceStatuses || {}) };
+                                      nextIds.forEach((sid) => {
+                                        if (!nextStatuses[sid]) nextStatuses[sid] = 'de_inceput';
+                                      });
+                                      const updated = updateLeadManualConfig(lead.id, {
+                                        selectedPackage: pkgId || undefined,
+                                        selectedServices: nextIds,
+                                        serviceStatuses: nextStatuses,
+                                        tier: pkg ? pkg.name : undefined,
+                                        orderStatus: lead.orderStatus || 'audit_discutie',
+                                      });
+                                      setLeads(updated);
+                                    }}
+                                    className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-[11px] text-cyan-200 font-medium cursor-pointer focus:outline-none focus:border-cyan-400"
+                                  >
+                                    <option value="">-- Alege Pachet Manual --</option>
+                                    {SERVICE_PACKAGES.map((pkg) => (
+                                      <option key={pkg.id} value={pkg.id}>
+                                        {pkg.name}
+                                      </option>
+                                    ))}
+                                  </select>
+
+                                  {/* Order Status Selector per Lead */}
+                                  <select
+                                    value={lead.orderStatus || 'audit_discutie'}
+                                    onChange={(e) => {
+                                      const updated = updateLeadManualConfig(lead.id, {
+                                        selectedPackage: lead.selectedPackage,
+                                        selectedServices: lead.selectedServices,
+                                        serviceStatuses: lead.serviceStatuses,
+                                        tier: lead.tier,
+                                        orderStatus: e.target.value,
+                                      });
+                                      setLeads(updated);
+                                    }}
+                                    className="px-2.5 py-1 rounded-lg bg-slate-900 border border-amber-500/30 text-[11px] text-amber-300 font-semibold cursor-pointer focus:outline-none"
+                                  >
+                                    {(Object.keys(ORDER_STATUS_META) as OrderOverallStatus[]).map((stKey) => (
+                                      <option key={stKey} value={stKey}>
+                                        Comandă: {ORDER_STATUS_META[stKey].label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handlePromoteLeadToOrder(lead)}
+                                  className="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-400 hover:text-slate-950 text-amber-300 border border-amber-500/30 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer"
+                                >
+                                  <Package className="w-3 h-3" />
+                                  <span>Deschide în Comenzi</span>
+                                </button>
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEditingNotesId(lead.id);
-                                  setNotesText(lead.notes || '');
-                                }}
-                                className="text-cyan-400 hover:underline text-[11px]"
-                              >
-                                {lead.notes ? 'Editează Notă' : '+ Adaugă Notă'}
-                              </button>
+
+                              {/* Clickable Service Toggles + Individual Statuses on the Lead Card */}
+                              <div className="flex flex-wrap gap-1.5">
+                                {AGENCY_SERVICES.map((srv) => {
+                                  const activeIds = lead.selectedServices || [];
+                                  const isChecked = activeIds.includes(srv.id);
+                                  const currentSrvStatus =
+                                    (lead.serviceStatuses?.[srv.id] as DeliverableStatus) || 'de_inceput';
+
+                                  return (
+                                    <div
+                                      key={srv.id}
+                                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[11px] transition-all ${
+                                        isChecked
+                                          ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-200'
+                                          : 'bg-slate-900/50 border-slate-800 text-slate-500 hover:text-slate-300'
+                                      }`}
+                                    >
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const nextIds = isChecked
+                                            ? activeIds.filter((id) => id !== srv.id)
+                                            : [...activeIds, srv.id];
+                                          const nextStatuses = { ...(lead.serviceStatuses || {}) };
+                                          if (!isChecked && !nextStatuses[srv.id]) {
+                                            nextStatuses[srv.id] = 'de_inceput';
+                                          }
+                                          const updated = updateLeadManualConfig(lead.id, {
+                                            selectedPackage:
+                                              nextIds.length === AGENCY_SERVICES.length
+                                                ? 'all_inclusive'
+                                                : 'custom',
+                                            selectedServices: nextIds,
+                                            serviceStatuses: nextStatuses,
+                                            tier:
+                                              nextIds.length === AGENCY_SERVICES.length
+                                                ? 'Pachet Complet — Toate Serviciile'
+                                                : 'Selecție Manuală',
+                                            orderStatus: lead.orderStatus || 'audit_discutie',
+                                          });
+                                          setLeads(updated);
+                                        }}
+                                        className="flex items-center gap-1 cursor-pointer font-medium"
+                                      >
+                                        {isChecked ? (
+                                          <CheckSquare className="w-3 h-3 text-cyan-400" />
+                                        ) : (
+                                          <Square className="w-3 h-3 text-slate-600" />
+                                        )}
+                                        <span>{srv.shortLabel}</span>
+                                      </button>
+
+                                      {isChecked && (
+                                        <select
+                                          value={currentSrvStatus}
+                                          onChange={(e) => {
+                                            const nextStatuses = {
+                                              ...(lead.serviceStatuses || {}),
+                                              [srv.id]: e.target.value,
+                                            };
+                                            const updated = updateLeadManualConfig(lead.id, {
+                                              selectedPackage: lead.selectedPackage,
+                                              selectedServices: lead.selectedServices,
+                                              serviceStatuses: nextStatuses,
+                                              tier: lead.tier,
+                                              orderStatus: lead.orderStatus || 'in_productie',
+                                            });
+                                            setLeads(updated);
+                                          }}
+                                          className="ml-1 px-1.5 py-0.5 rounded bg-[#05080f] border border-cyan-500/30 text-[10px] text-cyan-300 cursor-pointer focus:outline-none"
+                                        >
+                                          {(Object.keys(DELIVERABLE_STATUS_META) as DeliverableStatus[]).map(
+                                            (dKey) => (
+                                              <option key={dKey} value={dKey}>
+                                                {DELIVERABLE_STATUS_META[dKey].label}
+                                              </option>
+                                            )
+                                          )}
+                                        </select>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          )}
+
+                            {/* Founder Notes Bar */}
+                            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                              {editingNotesId === lead.id ? (
+                                <div className="w-full flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    value={notesText}
+                                    onChange={(e) => setNotesText(e.target.value)}
+                                    placeholder="Notă internă (ex: Au nevoie de Website + 8 Reels/lună + Meta Ads)..."
+                                    className="flex-1 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveNotes(lead.id)}
+                                    className="px-3 py-1.5 rounded-lg bg-cyan-400 text-slate-950 font-bold text-xs cursor-pointer"
+                                  >
+                                    Salvează
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingNotesId(null)}
+                                    className="px-2 py-1.5 text-slate-400 hover:text-white cursor-pointer"
+                                  >
+                                    Anulează
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="w-full flex items-center justify-between">
+                                  <div className="text-slate-400 text-xs flex items-center gap-1.5">
+                                    <span className="text-cyan-400 font-mono font-semibold">Notă Fondator:</span>
+                                    <span>{lead.notes || 'Nicio notă adăugată.'}</span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingNotesId(lead.id);
+                                      setNotesText(lead.notes || '');
+                                    }}
+                                    className="text-cyan-400 hover:underline text-[11px] cursor-pointer"
+                                  >
+                                    {lead.notes ? 'Editează Notă' : '+ Adaugă Notă'}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+
+          {/* TAB 1B: MANUAL SERVICE CONFIGURATOR & CLIENT ORDERS */}
+          {activeTab === 'orders' && (
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+              {/* Collapsible Manual Configurator (Post-Call Package & Service Builder) */}
+              {isOrderBuilderOpen && (
+                <form
+                  onSubmit={handleCreateOrderSubmit}
+                  className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#0a1120] to-[#060911] border border-cyan-500/35 shadow-2xl space-y-5"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
+                    <div>
+                      <div className="text-[11px] font-mono uppercase tracking-wider text-amber-300 font-bold flex items-center gap-1.5">
+                        <Wrench className="w-3.5 h-3.5" />
+                        Configurator Manual Post-Apel
+                      </div>
+                      <h4 className="text-lg font-bold font-display text-white mt-0.5">
+                        Configurează Pachetul &amp; Serviciile Clientului
+                      </h4>
+                      <p className="text-xs text-slate-400">
+                        Selectează pachetul complet cu toate serviciile sau bifează manual exact ce ai stabilit cu clientul după apel.
+                      </p>
+                    </div>
+
+                    {/* Quick Import From Lead */}
+                    <div className="min-w-[230px]">
+                      <label className="block text-[10px] font-mono uppercase text-slate-400 mb-1">
+                        Preia date din Inbound Leads (opțional)
+                      </label>
+                      <select
+                        value={selectedLeadForOrder}
+                        onChange={(e) => handleSelectLeadIntoOrderBuilder(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white cursor-pointer"
+                      >
+                        <option value="">-- Client Nou / Manual --</option>
+                        {leads.map((l) => (
+                          <option key={l.id} value={l.id}>
+                            {l.brandName} ({l.fullName})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Step 1: Package Presets (including All Services Full Package) */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-200">
+                        1. Alege Pachet Rapid sau Selectează Manual mai jos:
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => handleApplyOrderPackagePreset('all_inclusive')}
+                        className="px-3 py-1 rounded-full bg-gradient-to-r from-amber-400 to-cyan-400 text-slate-950 font-extrabold text-[11px] uppercase tracking-wider hover:brightness-110 transition cursor-pointer shadow"
+                      >
+                        ★ Selectează Pachetul cu Toate Serviciile
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                      {SERVICE_PACKAGES.map((pkg) => {
+                        const isSelected = ordPackageId === pkg.id;
+                        return (
+                          <button
+                            key={pkg.id}
+                            type="button"
+                            onClick={() => handleApplyOrderPackagePreset(pkg.id)}
+                            className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-cyan-500/15 border-cyan-400 shadow-[0_0_20px_rgba(0,242,254,0.18)]'
+                                : 'bg-[#06090f] border-slate-800 hover:border-slate-700'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-xs font-bold text-white">{pkg.name}</span>
+                              <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-cyan-300 font-mono">
+                                {pkg.badge}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 mt-1 line-clamp-2">{pkg.description}</p>
+                            <div className="text-[11px] font-mono text-emerald-400 font-bold mt-1.5">
+                              €{pkg.suggestedPriceEur.toLocaleString()}/lună
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Step 2: Individual Service Manual Checkboxes */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-slate-200 block">
+                      2. Bifează / Debifează Servicii Manual ({ordSelectedServices.length} selectate):
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                      {AGENCY_SERVICES.map((srv) => {
+                        const checked = ordSelectedServices.includes(srv.id);
+                        return (
+                          <button
+                            key={srv.id}
+                            type="button"
+                            onClick={() => handleToggleOrderBuilderService(srv.id)}
+                            className={`p-3 rounded-xl border text-left flex items-start gap-2.5 transition-all cursor-pointer ${
+                              checked
+                                ? 'bg-cyan-500/15 border-cyan-400/70 text-white'
+                                : 'bg-[#06090f] border-slate-800 text-slate-400 hover:text-slate-200'
+                            }`}
+                          >
+                            {checked ? (
+                              <CheckSquare className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                            ) : (
+                              <Square className="w-4 h-4 text-slate-600 shrink-0 mt-0.5" />
+                            )}
+                            <div>
+                              <div className="text-xs font-bold leading-snug">{srv.label}</div>
+                              <div className="text-[10px] text-slate-400 mt-0.5">{srv.defaultNote}</div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Step 3: Client Details, Price & Initial Status */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 pt-1">
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Nume Client *</label>
+                      <input
+                        type="text"
+                        required
+                        value={ordClientName}
+                        onChange={(e) => setOrdClientName(e.target.value)}
+                        placeholder="Ex: Andrei Popescu"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Brand / Firmă *</label>
+                      <input
+                        type="text"
+                        required
+                        value={ordBrandName}
+                        onChange={(e) => setOrdBrandName(e.target.value)}
+                        placeholder="Ex: Salon Glow Cluj"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Email / Telefon</label>
+                      <input
+                        type="text"
+                        value={ordEmail}
+                        onChange={(e) => setOrdEmail(e.target.value)}
+                        placeholder="client@brand.ro"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Preț Agreat (EUR/lună)</label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={ordPriceEur}
+                        onChange={(e) => setOrdPriceEur(Number(e.target.value))}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-emerald-300 font-mono font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Termen / Deadline</label>
+                      <input
+                        type="text"
+                        value={ordDeadline}
+                        onChange={(e) => setOrdDeadline(e.target.value)}
+                        placeholder="14 zile"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-slate-400 mb-1">Status Comandă</label>
+                      <select
+                        value={ordOverallStatus}
+                        onChange={(e) => setOrdOverallStatus(e.target.value as OrderOverallStatus)}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-cyan-300 font-semibold"
+                      >
+                        {(Object.keys(ORDER_STATUS_META) as OrderOverallStatus[]).map((k) => (
+                          <option key={k} value={k}>
+                            {ORDER_STATUS_META[k].label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <input
+                      type="text"
+                      value={ordNotes}
+                      onChange={(e) => setOrdNotes(e.target.value)}
+                      placeholder="Detalii discutate cu clientul (ex: culori logo, câte Reels pe lună, stil site, oraș Meta Ads)..."
+                      className="flex-1 px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                    />
+                    <button
+                      type="submit"
+                      className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-400 text-slate-950 font-bold text-xs uppercase tracking-wider hover:brightness-110 cursor-pointer shrink-0 shadow-lg shadow-cyan-500/20"
+                    >
+                      + Salvează Comanda Clientului
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Active Orders Filter Bar */}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h4 className="text-sm font-bold font-display text-white">
+                    Comenzi Active &amp; Status Livrabile ({orders.length})
+                  </h4>
+                  <p className="text-xs text-slate-400">
+                    Modifică instant statusul fiecărui serviciu (Reel, Web Design, Logo, Meta Ads, SEO Local) sau editează serviciile incluse.
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 overflow-x-auto">
+                  {(['all', 'audit_discutie', 'oferta_trimisa', 'in_productie', 'in_aprobare', 'finalizat'] as const).map(
+                    (st) => (
+                      <button
+                        key={st}
+                        type="button"
+                        onClick={() => setOrderFilterStatus(st)}
+                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+                          orderFilterStatus === st
+                            ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-bold'
+                            : 'bg-slate-900/60 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {st === 'all' ? 'Toate' : ORDER_STATUS_META[st].label}
+                      </button>
+                    )
+                  )}
+                </div>
+              </div>
+
+              {/* Orders Cards List */}
+              <div className="space-y-4">
+                {orders
+                  .filter((o) => orderFilterStatus === 'all' || o.overallStatus === orderFilterStatus)
+                  .map((ord) => {
+                    const deliveredCount = ord.services.filter((s) => s.status === 'livrat').length;
+                    const progressPct =
+                      ord.services.length > 0 ? Math.round((deliveredCount / ord.services.length) * 100) : 0;
+                    const priceDisplay =
+                      currency === 'RON'
+                        ? `${Math.round(ord.monthlyPriceEur * 4.97).toLocaleString()} RON`
+                        : currency === 'EUR'
+                        ? `€${ord.monthlyPriceEur.toLocaleString()}`
+                        : `$${Math.round(ord.monthlyPriceEur * 1.08).toLocaleString()}`;
+                    const isEditingThisOrder = editingOrderServicesId === ord.id;
+
+                    return (
+                      <div
+                        key={ord.id}
+                        className="p-5 rounded-2xl bg-[#090e18] border border-slate-800 hover:border-cyan-500/40 transition-all space-y-4 shadow-xl"
+                      >
+                        {/* Order Card Header */}
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-base font-bold text-white font-display">{ord.brandName}</span>
+                              <span className="text-xs text-cyan-300 font-medium">({ord.clientName})</span>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 font-mono font-bold">
+                                {ord.packageName}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 mt-1">
+                              <span>{ord.email}</span>
+                              <span>•</span>
+                              <span className="text-emerald-400 font-mono font-bold">{priceDisplay}/lună</span>
+                              <span>•</span>
+                              <span>Termen: <strong className="text-slate-200">{ord.deadline}</strong></span>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2">
+                            <select
+                              value={ord.overallStatus}
+                              onChange={(e) => {
+                                const updated = updateClientOrderOverallStatus(
+                                  ord.id,
+                                  e.target.value as OrderOverallStatus
+                                );
+                                setOrders(updated);
+                              }}
+                              className={`px-3 py-1.5 rounded-xl border text-xs font-bold cursor-pointer focus:outline-none ${
+                                ORDER_STATUS_META[ord.overallStatus].badgeClass
+                              }`}
+                            >
+                              {(Object.keys(ORDER_STATUS_META) as OrderOverallStatus[]).map((k) => (
+                                <option key={k} value={k}>
+                                  Status: {ORDER_STATUS_META[k].label}
+                                </option>
+                              ))}
+                            </select>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setEditingOrderServicesId(isEditingThisOrder ? null : ord.id)
+                              }
+                              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-cyan-500/20 text-cyan-300 border border-slate-700 text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                            >
+                              <Sliders className="w-3.5 h-3.5" />
+                              <span>{isEditingThisOrder ? 'Închide Selector' : 'Modifică Servicii / Pachet'}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (confirm(`Ștergi comanda pentru ${ord.brandName}?`)) {
+                                  setOrders(deleteClientOrder(ord.id));
+                                }
+                              }}
+                              className="p-2 rounded-xl bg-slate-800/70 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
+                              title="Șterge Comanda"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
+
+                        {/* Inline Manual Package/Services Editor for Existing Order */}
+                        {isEditingThisOrder && (
+                          <div className="p-4 rounded-xl bg-[#05080f] border border-cyan-500/30 space-y-3">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="text-xs font-bold text-cyan-300">
+                                Selector Manual Servicii pentru {ord.brandName}:
+                              </span>
+                              <div className="flex flex-wrap gap-1.5">
+                                {SERVICE_PACKAGES.filter((p) => p.serviceIds.length > 0).map((pkg) => (
+                                  <button
+                                    key={pkg.id}
+                                    type="button"
+                                    onClick={() => {
+                                      const updated = updateClientOrderServicesList(
+                                        ord.id,
+                                        pkg.id,
+                                        pkg.name,
+                                        pkg.serviceIds,
+                                        pkg.suggestedPriceEur
+                                      );
+                                      setOrders(updated);
+                                    }}
+                                    className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-cyan-500/20 border border-slate-700 text-[10px] text-slate-200 font-semibold cursor-pointer"
+                                  >
+                                    {pkg.name}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                              {AGENCY_SERVICES.map((srv) => {
+                                const currentIds = ord.services.map((s) => s.serviceId);
+                                const isActive = currentIds.includes(srv.id);
+                                return (
+                                  <button
+                                    key={srv.id}
+                                    type="button"
+                                    onClick={() => {
+                                      const nextIds = isActive
+                                        ? currentIds.filter((id) => id !== srv.id)
+                                        : [...currentIds, srv.id];
+                                      if (nextIds.length === 0) return;
+                                      const isAll = nextIds.length === AGENCY_SERVICES.length;
+                                      const updated = updateClientOrderServicesList(
+                                        ord.id,
+                                        isAll ? 'all_inclusive' : 'custom',
+                                        isAll ? 'Pachet Complet — Toate Serviciile' : 'Selecție Manuală Personalizată',
+                                        nextIds
+                                      );
+                                      setOrders(updated);
+                                    }}
+                                    className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-all ${
+                                      isActive
+                                        ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200'
+                                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                                    }`}
+                                  >
+                                    {isActive ? (
+                                      <CheckSquare className="w-3.5 h-3.5 text-cyan-400" />
+                                    ) : (
+                                      <Square className="w-3.5 h-3.5 text-slate-600" />
+                                    )}
+                                    <span>{srv.shortLabel}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Progress Bar */}
+                        <div>
+                          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                            <span>
+                              Progres livrare: <strong className="text-white">{deliveredCount}</strong> din{' '}
+                              {ord.services.length} servicii finalizate
+                            </span>
+                            <span className="font-mono text-cyan-300 font-bold">{progressPct}%</span>
+                          </div>
+                          <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-300"
+                              style={{ width: `${progressPct}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Individual Per-Service Status Rows (Reels, Web Design, Logo, Meta Ads, Local SEO) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                          {ord.services.map((srv) => {
+                            const meta = DELIVERABLE_STATUS_META[srv.status];
+                            return (
+                              <div
+                                key={srv.serviceId}
+                                className="p-3 rounded-xl bg-[#05080f] border border-slate-800/90 flex items-center justify-between gap-2"
+                              >
+                                <div className="min-w-0">
+                                  <div className="text-xs font-bold text-white truncate">{srv.label}</div>
+                                  {srv.details && (
+                                    <div className="text-[10px] text-slate-400 truncate">{srv.details}</div>
+                                  )}
+                                </div>
+                                <select
+                                  value={srv.status}
+                                  onChange={(e) => {
+                                    const updated = updateClientOrderServiceStatus(
+                                      ord.id,
+                                      srv.serviceId,
+                                      e.target.value as DeliverableStatus
+                                    );
+                                    setOrders(updated);
+                                  }}
+                                  className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold cursor-pointer focus:outline-none shrink-0 ${meta.badgeClass}`}
+                                >
+                                  {(Object.keys(DELIVERABLE_STATUS_META) as DeliverableStatus[]).map((k) => (
+                                    <option key={k} value={k}>
+                                      {DELIVERABLE_STATUS_META[k].label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {ord.notes && (
+                          <div className="text-xs text-slate-400 italic pt-1 border-t border-slate-800/60">
+                            Notă comandă: „{ord.notes}”
+                          </div>
+                        )}
                       </div>
                     );
-                  })
-                )}
+                  })}
               </div>
             </div>
           )}
@@ -1371,13 +2234,45 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 self-end sm:self-auto">
+                      <div className="flex flex-wrap items-center gap-2 self-end sm:self-auto">
+                        <select
+                          value={session.selectedPackage || ''}
+                          onChange={(e) => {
+                            const pkg = SERVICE_PACKAGES.find((p) => p.id === e.target.value);
+                            const updated = updateLeadManualConfig(session.id, {
+                              selectedPackage: e.target.value || undefined,
+                              selectedServices: pkg ? pkg.serviceIds : [],
+                              tier: pkg ? pkg.name : undefined,
+                              serviceStatuses: session.serviceStatuses,
+                              orderStatus: session.orderStatus || 'audit_discutie',
+                            });
+                            setLeads(updated);
+                          }}
+                          className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-cyan-200 cursor-pointer"
+                        >
+                          <option value="">-- Asignează Pachet Post-Apel --</option>
+                          {SERVICE_PACKAGES.map((pkg) => (
+                            <option key={pkg.id} value={pkg.id}>
+                              {pkg.name}
+                            </option>
+                          ))}
+                        </select>
+
+                        <button
+                          type="button"
+                          onClick={() => handlePromoteLeadToOrder(session)}
+                          className="px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-400 hover:text-slate-950 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all"
+                        >
+                          <Package className="w-3.5 h-3.5" />
+                          <span>Trimite în Comenzi</span>
+                        </button>
+
                         <a
                           href={`mailto:${session.email}?subject=Link Google Meet - Ședință Strategie Kromaq cu Iulian Chirila&body=Salut ${session.fullName},%0D%0A%0D%0AIată link-ul de conectare pentru sesiunea noastră de consultanță: https://meet.google.com/kmq-cluj-strat`}
                           className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 text-xs font-bold flex items-center gap-1.5 hover:brightness-110 shadow-lg shadow-cyan-500/20"
                         >
                           <PhoneCall className="w-3.5 h-3.5" />
-                          <span>Deschide Apel Google Meet</span>
+                          <span>Google Meet</span>
                         </a>
                       </div>
                     </div>
@@ -1412,13 +2307,14 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
               </div>
 
               <div className="space-y-3">
-                {INITIAL_RETAINERS.map((ret) => {
+                {retainers.map((ret) => {
                   const progressPct = Math.round((ret.deliveredReels / ret.totalReelsContract) * 100);
                   const feeDisplay = currency === 'RON' 
                     ? `${ret.monthlyFeeRon.toLocaleString()} RON` 
                     : currency === 'EUR' 
                     ? `€${ret.monthlyFeeEur.toLocaleString()}` 
                     : `$${Math.round(ret.monthlyFeeEur * 1.08).toLocaleString()}`;
+                  const activeRetServices = retainerServicesMap[ret.id] || [];
 
                   return (
                     <div
@@ -1438,26 +2334,117 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                           <div className="text-right">
                             <div className="text-sm font-black text-cyan-300 font-mono">{feeDisplay}/mo</div>
                             <div className="text-[11px] text-emerald-400 font-mono font-bold">ROAS: {ret.roas}x</div>
                           </div>
-                          <span className={`text-[10px] px-2.5 py-1 rounded-full font-mono uppercase font-bold ${
-                            ret.status === 'active' 
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' 
-                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                          }`}>
-                            {ret.status === 'active' ? 'Activ' : 'Reînnoire'}
-                          </span>
+                          <select
+                            value={ret.status}
+                            onChange={(e) => {
+                              const nextStatus = e.target.value as ClientRetainer['status'];
+                              setRetainers(retainers.map((r) => (r.id === ret.id ? { ...r, status: nextStatus } : r)));
+                            }}
+                            className={`text-[11px] px-2.5 py-1 rounded-full font-mono uppercase font-bold border cursor-pointer focus:outline-none ${
+                              ret.status === 'active'
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                : ret.status === 'review'
+                                ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
+                                : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                            }`}
+                          >
+                            <option value="active">Activ</option>
+                            <option value="review">În Aprobare</option>
+                            <option value="renewing">Reînnoire</option>
+                          </select>
                         </div>
                       </div>
 
-                      {/* Deliverables Progress Bar */}
+                      {/* Manual Services Selector inside each Retainer */}
+                      <div className="pt-2 border-t border-slate-800/70 space-y-1.5">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-slate-400 font-mono">Servicii Active Selectate Manual:</span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setRetainerServicesMap({
+                                ...retainerServicesMap,
+                                [ret.id]: AGENCY_SERVICES.map((s) => s.id),
+                              })
+                            }
+                            className="text-amber-300 hover:underline font-semibold cursor-pointer"
+                          >
+                            + Selectează Toate Serviciile
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {AGENCY_SERVICES.map((srv) => {
+                            const active = activeRetServices.includes(srv.id);
+                            return (
+                              <button
+                                key={srv.id}
+                                type="button"
+                                onClick={() => {
+                                  const next = active
+                                    ? activeRetServices.filter((id) => id !== srv.id)
+                                    : [...activeRetServices, srv.id];
+                                  setRetainerServicesMap({ ...retainerServicesMap, [ret.id]: next });
+                                }}
+                                className={`px-2.5 py-1 rounded-lg border text-[11px] flex items-center gap-1 cursor-pointer transition-all ${
+                                  active
+                                    ? 'bg-cyan-500/15 border-cyan-500/40 text-cyan-200 font-semibold'
+                                    : 'bg-slate-900/50 border-slate-800 text-slate-500 hover:text-slate-300'
+                                }`}
+                              >
+                                {active ? (
+                                  <CheckSquare className="w-3 h-3 text-cyan-400" />
+                                ) : (
+                                  <Square className="w-3 h-3 text-slate-600" />
+                                )}
+                                <span>{srv.shortLabel}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Deliverables Progress Bar + Manual Reels Adjuster */}
                       <div>
-                        <div className="flex justify-between text-xs text-slate-400 mb-1">
+                        <div className="flex justify-between items-center text-xs text-slate-400 mb-1">
                           <span>Conținut Livrat: <strong className="text-white">{ret.deliveredReels}</strong> din {ret.totalReelsContract} video-uri</span>
-                          <span className="font-mono text-cyan-300">{progressPct}% complet</span>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setRetainers(
+                                  retainers.map((r) =>
+                                    r.id === ret.id && r.deliveredReels > 0
+                                      ? { ...r, deliveredReels: r.deliveredReels - 1 }
+                                      : r
+                                  )
+                                )
+                              }
+                              className="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 hover:text-white text-[10px] font-mono cursor-pointer"
+                            >
+                              -1 Reel
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setRetainers(
+                                  retainers.map((r) =>
+                                    r.id === ret.id && r.deliveredReels < r.totalReelsContract
+                                      ? { ...r, deliveredReels: r.deliveredReels + 1 }
+                                      : r
+                                  )
+                                )
+                              }
+                              className="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 hover:bg-cyan-400 hover:text-slate-950 text-[10px] font-mono font-bold cursor-pointer"
+                            >
+                              +1 Reel
+                            </button>
+                            <span className="font-mono text-cyan-300">{progressPct}% complet</span>
+                          </div>
                         </div>
                         <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                           <div
@@ -1544,23 +2531,21 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                         </div>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
+                      <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2 text-xs">
                         <span className="text-slate-400">Target: <strong className="text-white">{shoot.reelsPlanned} Reels</strong></span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const newStatusMap: Record<typeof shoot.status, typeof shoot.status> = {
-                              scenariu_aprobat: 'programat',
-                              programat: 'in_editare_vfx',
-                              in_editare_vfx: 'livrat',
-                              livrat: 'scenariu_aprobat',
-                            };
-                            setShoots(shoots.map(s => s.id === shoot.id ? { ...s, status: newStatusMap[s.status] } : s));
+                        <select
+                          value={shoot.status}
+                          onChange={(e) => {
+                            const nextStatus = e.target.value as ShootScheduleItem['status'];
+                            setShoots(shoots.map((s) => (s.id === shoot.id ? { ...s, status: nextStatus } : s)));
                           }}
-                          className="text-cyan-400 hover:underline text-[11px] cursor-pointer"
+                          className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-cyan-300 text-[11px] font-semibold cursor-pointer focus:outline-none"
                         >
-                          Schimbă Stadiul Producției →
-                        </button>
+                          <option value="scenariu_aprobat">Scenariu Aprobat</option>
+                          <option value="programat">Filmări Programate</option>
+                          <option value="in_editare_vfx">Montaj &amp; VFX 3D</option>
+                          <option value="livrat">Livrat ✓</option>
+                        </select>
                       </div>
                     </div>
                   );
@@ -1764,10 +2749,12 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                 </button>
               </div>
 
-              {/* Lead Selector or Custom Brand */}
-              <div className="p-4 rounded-2xl bg-[#090e18] border border-slate-800 space-y-3">
-                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider font-mono">Configurare Date Client</div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Lead Selector, Package & Manual Services Configurator */}
+              <div className="p-4 rounded-2xl bg-[#090e18] border border-slate-800 space-y-4">
+                <div className="text-xs font-bold text-slate-300 uppercase tracking-wider font-mono">
+                  Configurare Client, Pachet &amp; Servicii Contract
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-[11px] text-slate-400 mb-1">Selectează Lead din Pipeline</label>
                     <select
@@ -1775,7 +2762,13 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                       onChange={(e) => {
                         const l = leads.find((x) => x.id === e.target.value);
                         setSelectedContractLead(l || null);
-                        if (l) setContractCustomBrand(l.brandName);
+                        if (l) {
+                          setContractCustomBrand(l.brandName);
+                          if (l.selectedServices && l.selectedServices.length > 0) {
+                            setContractSelectedServices(l.selectedServices as AgencyServiceId[]);
+                          }
+                          if (l.selectedPackage) setContractPackageId(l.selectedPackage);
+                        }
                       }}
                       className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
                     >
@@ -1787,7 +2780,7 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                   </div>
 
                   <div>
-                    <label className="block text-[11px] text-slate-400 mb-1">Denumire Firmă / Brand Beneficiar</label>
+                    <label className="block text-[11px] text-slate-400 mb-1">Denumire Firmă / Brand</label>
                     <input
                       type="text"
                       value={contractCustomBrand}
@@ -1807,19 +2800,99 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
                       placeholder="RO12345678"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">Valoare Lunară (EUR)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={contractPriceEur}
+                      onChange={(e) => setContractPriceEur(Number(e.target.value))}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-emerald-300 font-mono font-bold"
+                    />
+                  </div>
+                </div>
+
+                {/* Package & Manual Service Checkboxes in Contract Tab */}
+                <div className="pt-2 border-t border-slate-800/80 space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-[11px] text-slate-300 font-semibold">
+                      Servicii Incluse în Contract:
+                    </span>
+                    <select
+                      value={contractPackageId}
+                      onChange={(e) => {
+                        const pkg = SERVICE_PACKAGES.find((p) => p.id === e.target.value);
+                        setContractPackageId(e.target.value);
+                        if (pkg && pkg.serviceIds.length > 0) {
+                          setContractSelectedServices([...pkg.serviceIds]);
+                          setContractPriceEur(pkg.suggestedPriceEur);
+                        }
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-[11px] text-cyan-300 cursor-pointer"
+                    >
+                      {SERVICE_PACKAGES.map((pkg) => (
+                        <option key={pkg.id} value={pkg.id}>
+                          {pkg.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5">
+                    {AGENCY_SERVICES.map((srv) => {
+                      const active = contractSelectedServices.includes(srv.id);
+                      return (
+                        <button
+                          key={srv.id}
+                          type="button"
+                          onClick={() => {
+                            setContractPackageId('custom');
+                            setContractSelectedServices((prev) =>
+                              active ? prev.filter((id) => id !== srv.id) : [...prev, srv.id]
+                            );
+                          }}
+                          className={`px-2.5 py-1 rounded-lg border text-[11px] flex items-center gap-1 cursor-pointer transition-all ${
+                            active
+                              ? 'bg-amber-500/15 border-amber-400/50 text-amber-200 font-semibold'
+                              : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          {active ? (
+                            <CheckSquare className="w-3 h-3 text-amber-400" />
+                          ) : (
+                            <Square className="w-3 h-3 text-slate-600" />
+                          )}
+                          <span>{srv.shortLabel}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
               {/* Preview of Legal Contract Draft */}
               <div className="p-5 rounded-2xl bg-[#05080e] border border-slate-800 font-mono text-[11px] text-slate-300 space-y-2 whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto">
                 <div className="text-cyan-400 font-bold text-center pb-2 border-b border-slate-800">
-                  CONTRACT DE PRESTĂRI SERVICII MARKETING DIGITAL & PRODUCȚIE VIDEO (CLUJ-NAPOCA)
+                  CONTRACT DE PRESTĂRI SERVICII MARKETING DIGITAL &amp; DESIGN (CLUJ-NAPOCA)
                 </div>
                 <div>{`PĂRȚI: SC KROMAQ CREATIVE PERFORMANCE SRL (Prestator - Iulian Chirila) & ${contractCustomBrand.toUpperCase()} (CUI ${contractCustomCui})`}</div>
-                <div className="text-slate-400">{`OBIECT: 20-24 Video-uri native verticale Reels/TikTok 4K ProRes (filmare la locație în Cluj-Napoca / Studio Kromaq), post-producție, animații 3D și gestiune bugete Meta & TikTok Ads.`}</div>
-                <div className="text-slate-400">{`VALOARE CONTRACT: ${currency === 'RON' ? '34.200 RON + TVA / lună' : currency === 'EUR' ? '6.900 EUR + TVA / lună' : '$7,500 / month'}`}</div>
+                <div className="text-slate-300">
+                  {`OBIECT (SERVICII SELECTATE): ${
+                    contractSelectedServices
+                      .map((sid) => AGENCY_SERVICES.find((a) => a.id === sid)?.label || sid)
+                      .join(' • ') || 'Niciun serviciu selectat'
+                  }`}
+                </div>
+                <div className="text-slate-400">{`VALOARE CONTRACT: ${
+                  currency === 'RON'
+                    ? `${Math.round(contractPriceEur * 4.97).toLocaleString()} RON + TVA / lună`
+                    : currency === 'EUR'
+                    ? `${contractPriceEur.toLocaleString()} EUR + TVA / lună`
+                    : `$${Math.round(contractPriceEur * 1.08).toLocaleString()} / month`
+                }`}</div>
                 <div className="text-slate-400">{`FACTURARE: Sistem electronic național RO e-Factura. Plată prin transfer bancar.`}</div>
-                <div className="text-slate-400">{`DREPTURI AUTOR & CONFIDENȚIALITATE: Cesionare drepturi de utilizare comercială pe rețele sociale pe durata campaniei.`}</div>
+                <div className="text-slate-400">{`DREPTURI AUTOR & CONFIDENȚIALITATE: Cesionare drepturi de utilizare comercială după achitarea integrală.`}</div>
               </div>
             </div>
           )}
@@ -2412,15 +3485,67 @@ PRESTATOR: KROMAQ SRL (Iulian Chirila)          BENEFICIAR: ${brand}`;
               </div>
 
               <div>
+                <label className="block text-slate-300 mb-1">Pachet Servicii (Post-Apel)</label>
+                <select
+                  value={newSelectedPackage}
+                  onChange={(e) => {
+                    const pkg = SERVICE_PACKAGES.find((p) => p.id === e.target.value);
+                    setNewSelectedPackage(e.target.value);
+                    if (pkg) {
+                      if (pkg.serviceIds.length > 0) setNewSelectedServices([...pkg.serviceIds]);
+                      setNewTier(pkg.name);
+                    }
+                  }}
+                  className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white"
+                >
+                  {SERVICE_PACKAGES.map((pkg) => (
+                    <option key={pkg.id} value={pkg.id}>
+                      {pkg.name} (€{pkg.suggestedPriceEur}/mo)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1">Servicii Selectate Manual:</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {AGENCY_SERVICES.map((srv) => {
+                    const checked = newSelectedServices.includes(srv.id);
+                    return (
+                      <button
+                        key={srv.id}
+                        type="button"
+                        onClick={() => {
+                          setNewSelectedPackage('custom');
+                          setNewSelectedServices((prev) =>
+                            checked ? prev.filter((id) => id !== srv.id) : [...prev, srv.id]
+                          );
+                        }}
+                        className={`px-2 py-1 rounded-lg border text-[11px] flex items-center gap-1 cursor-pointer ${
+                          checked
+                            ? 'bg-cyan-500/20 border-cyan-400 text-cyan-200 font-semibold'
+                            : 'bg-slate-900 border-slate-800 text-slate-400'
+                        }`}
+                      >
+                        {checked ? <CheckSquare className="w-3 h-3 text-cyan-400" /> : <Square className="w-3 h-3 text-slate-600" />}
+                        <span>{srv.shortLabel}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-slate-300 mb-1">Buget Lunar Estimat</label>
                 <select
                   value={newBudget}
                   onChange={(e) => setNewBudget(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white"
                 >
-                  <option value="€3,800/mo (Launch)">€3,800/mo (Launch Accelerator)</option>
-                  <option value="€6,900/mo (Motion & Performance)">€6,900/mo (Motion & Performance)</option>
-                  <option value="€12,500/mo (Enterprise)">€12,500/mo (Enterprise Bespoke)</option>
+                  <option value="€500 — €1,000/mo">€500 — €1,000/mo</option>
+                  <option value="€1,000 — €2,500/mo">€1,000 — €2,500/mo</option>
+                  <option value="€2,500 — €5,000/mo">€2,500 — €5,000/mo</option>
+                  <option value="€5,000+/mo">€5,000+/mo</option>
                 </select>
               </div>
 

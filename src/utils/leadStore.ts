@@ -12,6 +12,10 @@ export interface Lead {
   selectedSlot: string;
   message?: string;
   tier?: string;
+  selectedPackage?: string;
+  selectedServices?: string[];
+  serviceStatuses?: Record<string, string>;
+  orderStatus?: string;
   createdAt: string;
   status: LeadStatus;
   notes?: string;
@@ -22,45 +26,63 @@ const STORAGE_KEY = 'kromaq_leads_data_v2';
 export const INITIAL_LEADS: Lead[] = [
   {
     id: 'lead-1',
-    fullName: 'Marcus Vance',
-    email: 'marcus@apexapparel.co',
-    brandName: 'Apex Apparel',
-    socialHandle: '@apexapparel',
-    budget: '$10,000 — $25,000/mo',
-    selectedSlot: 'Tomorrow, 2:00 PM EST',
-    message: 'Looking to scale TikTok Shop & Reels for our Q4 outerwear collection drop.',
-    tier: 'Motion & Performance',
+    fullName: 'Andrei Moldovan',
+    email: 'andrei@urbandental.ro',
+    brandName: 'Urban Dental & Aesthetics Cluj',
+    socialHandle: '@urbandental.cluj',
+    budget: '€1,000 — €2,500/mo',
+    selectedSlot: 'Tomorrow, 11:00 AM',
+    message: 'Interesat de website nou, Reels de prezentare și campanii Meta Ads pentru implantologie.',
+    tier: '4-in-1 Growth System',
+    selectedPackage: 'growth_4in1',
+    selectedServices: ['web_design', 'meta_ads', 'reels_video', 'local_seo'],
+    serviceStatuses: {
+      web_design: 'in_lucru',
+      meta_ads: 'de_inceput',
+      reels_video: 'in_aprobare',
+      local_seo: 'livrat',
+    },
+    orderStatus: 'in_productie',
     createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-    status: 'new',
-    notes: 'Requested emphasis on 3D cloth motion and rapid creator ads.',
+    status: 'call_scheduled',
+    notes: 'Discutat pe telefon — vrea start cu Landing Page + 8 Reels pe lună.',
   },
   {
     id: 'lead-2',
-    fullName: 'Elena Rostova',
-    email: 'elena@solstice-ai.com',
-    brandName: 'Solstice Intelligence',
-    socialHandle: '@solsticeai',
-    budget: '$25,000+/mo',
-    selectedSlot: 'Thursday, 10:30 AM EST',
-    message: 'Need 3D motion explainers for enterprise data software launch and founder LinkedIn video.',
-    tier: 'Enterprise Bespoke',
+    fullName: 'Bogdan Rusu',
+    email: 'contact@apexdetailing.ro',
+    brandName: 'Apex Auto Detailing',
+    socialHandle: '@apexdetailing.cj',
+    budget: '€1,000 — €2,500/mo',
+    selectedSlot: 'Thursday, 10:30 AM',
+    message: 'Avem nevoie de clienți noi prin reclame și clipuri scurte din atelier.',
+    selectedPackage: 'all_inclusive',
+    selectedServices: ['web_design', 'meta_ads', 'reels_video', 'local_seo', 'logo_branding', 'copywriting_scripts'],
+    serviceStatuses: {
+      web_design: 'livrat',
+      meta_ads: 'in_lucru',
+      reels_video: 'editare_revizie',
+      local_seo: 'livrat',
+      logo_branding: 'livrat',
+      copywriting_scripts: 'livrat',
+    },
+    orderStatus: 'in_productie',
     createdAt: new Date(Date.now() - 3600000 * 18).toISOString(),
-    status: 'call_scheduled',
-    notes: 'Series B tech brand. Prepared initial competitive audit.',
+    status: 'proposal_sent',
+    notes: 'Pachet Complet selectat manual după Google Meet.',
   },
   {
     id: 'lead-3',
-    fullName: 'Henrik Lindqvist',
-    email: 'henrik@luminasound.eu',
-    brandName: 'Lumina Studio & Acoustics',
-    socialHandle: '@luminasound',
-    budget: '$5,000 — $10,000/mo',
-    selectedSlot: 'Friday, 1:00 PM EST',
-    message: 'Preparing luxury noise-cancelling headphones drop. Need cinema-grade aesthetic teaser reels.',
-    tier: 'Launch Accelerator',
+    fullName: 'Elena Vasilescu',
+    email: 'elena@nordicliving.ro',
+    brandName: 'Nordic Living Imobiliare',
+    socialHandle: '@nordicliving.ro',
+    budget: '€2,500 — €5,000/mo',
+    selectedSlot: 'Friday, 1:00 PM',
+    message: 'Vrem sistem complet de generare programări pentru vizionări.',
     createdAt: new Date(Date.now() - 3600000 * 42).toISOString(),
-    status: 'proposal_sent',
-    notes: 'Sent customized 24-asset motion proposal.',
+    status: 'new',
+    notes: '',
   },
 ];
 
@@ -119,6 +141,19 @@ export function updateLeadNotes(id: string, notes: string): Lead[] {
   return updated;
 }
 
+export function updateLeadManualConfig(
+  id: string,
+  patch: Pick<Lead, 'selectedPackage' | 'selectedServices' | 'serviceStatuses' | 'orderStatus' | 'tier'>
+): Lead[] {
+  const current = getStoredLeads();
+  const updated = current.map((l) => (l.id === id ? { ...l, ...patch } : l));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    window.dispatchEvent(new CustomEvent('kromaq_leads_updated'));
+  } catch (err) {}
+  return updated;
+}
+
 export function deleteLead(id: string): Lead[] {
   const current = getStoredLeads();
   const updated = current.filter((l) => l.id !== id);
@@ -130,7 +165,22 @@ export function deleteLead(id: string): Lead[] {
 }
 
 export function exportLeadsToCSV(leads: Lead[]): void {
-  const headers = ['ID', 'Full Name', 'Email', 'Brand', 'Social Handle', 'Budget', 'Selected Slot', 'Plan Tier', 'Status', 'Notes', 'Message', 'Created At'];
+  const headers = [
+    'ID',
+    'Full Name',
+    'Email',
+    'Brand',
+    'Social Handle',
+    'Budget',
+    'Selected Slot',
+    'Manual Package',
+    'Manual Services',
+    'Order Status',
+    'Lead Status',
+    'Notes',
+    'Message',
+    'Created At',
+  ];
   const rows = leads.map((l) => [
     l.id,
     `"${l.fullName.replace(/"/g, '""')}"`,
@@ -139,7 +189,9 @@ export function exportLeadsToCSV(leads: Lead[]): void {
     `"${(l.socialHandle || '').replace(/"/g, '""')}"`,
     `"${l.budget}"`,
     `"${l.selectedSlot}"`,
-    `"${l.tier || 'None'}"`,
+    `"${l.tier || l.selectedPackage || 'Nestabilit'}"`,
+    `"${(l.selectedServices || []).join(', ')}"`,
+    `"${l.orderStatus || 'audit_discutie'}"`,
     `"${l.status}"`,
     `"${(l.notes || '').replace(/"/g, '""')}"`,
     `"${(l.message || '').replace(/"/g, '""')}"`,
