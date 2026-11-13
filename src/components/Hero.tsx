@@ -41,7 +41,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenBooking, onExploreWork }) => {
 
         {/* Subtitle */}
         <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
-          We combine impactful video, modern web design, paid ads, and local SEO to turn online attention into real customers and market authority.
+          We combine impactful video, modern web design, paid ads and local SEO to turn online attention into real customers and market authority.
         </p>
 
         {/* CTA Buttons */}
