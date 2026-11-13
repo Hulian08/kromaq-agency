@@ -35,13 +35,13 @@ export const Hero: React.FC<HeroProps> = ({ onOpenBooking, onExploreWork }) => {
             motion.
           </span>
           <span className="block text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-200 mt-2 font-display">
-            Data-driven SMM for high-end brands.
+            Results-driven digital marketing for growing brands.
           </span>
         </h1>
 
         {/* Subtitle */}
         <p className="text-base sm:text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
-          We combine cinema-grade motion creative, proprietary AI trend telemetry, and ruthless paid acquisition to build dominant cultural authority for scaling leaders.
+          We combine impactful video, modern web design, paid ads, and local SEO to turn online attention into real customers and market authority.
         </p>
 
         {/* CTA Buttons */}
