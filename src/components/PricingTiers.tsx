@@ -12,51 +12,48 @@ export const PricingTiers: React.FC<PricingTiersProps> = ({ onSelectTier }) => {
 
   const tiers = [
     {
-      name: 'Launch Accelerator',
-      tagline: 'Predictable viral reach and organic brand authority.',
-      basePrice: 3800,
+      name: 'Conversion Presence',
+      tagline: 'Fix your digital foundation: high-converting web & local search visibility.',
+      basePrice: 950,
       popular: false,
       features: [
-        '12 Bespoke Short-Form Reels / TikToks per month',
-        'Custom 3D kinetic typography & brand motion styling',
-        'Algorithmic audio matching & sound design',
-        'Bi-weekly AI trend & hook intelligence reports',
-        'Dedicated Slack channel & review portal',
-        'Turnaround: 48-72 hours per asset batch',
+        'Conversion-focused Website or High-Intent Landing Page',
+        'Mobile-first UX & offer messaging clarity',
+        'Google Business Profile optimization & Local SEO setup',
+        'Meta Pixel & conversion event tracking installation',
+        'Direct communication channel & rapid updates',
+        'Turnaround: launched within 14 days',
       ],
-      notIncluded: ['Paid media ad management', 'Custom AI model fine-tuning'],
     },
     {
-      name: 'Motion & Performance',
-      tagline: 'Full-stack organic engine plus ruthless paid acquisition.',
-      basePrice: 6900,
+      name: '4-in-1 Growth System',
+      tagline: 'Everything under one roof: Web, Meta Ads, Short-Form Video & Local SEO.',
+      basePrice: 1850,
       popular: true,
       features: [
-        '24 Cinema-Grade Motion Assets per month',
-        'Paid media management on Meta & TikTok (up to $50k/mo ad spend)',
-        'Multi-variant hook split testing (4 variations per asset)',
-        'Full access to Live Kromaq Intelligence Terminal',
-        'AI Trend Radar 24/7 scraping for your exact niche',
-        'Weekly video growth & attribution strategy calls',
-        'Priority Slack response (< 2 hours)',
+        'Conversion Landing Page / Website Optimization',
+        'Meta Ads (Facebook & Instagram) Lead Gen management',
+        'Short-Form Video Production (Reels & TikTok scripting + dynamic edit)',
+        'Social Media Management & Google Business Local SEO',
+        'Daily cost-per-lead monitoring & ad optimization',
+        '24/7 direct access to ad accounts & transparent ROI data',
+        'Bi-weekly performance review & scaling calls',
       ],
-      notIncluded: [],
     },
     {
-      name: 'Enterprise Bespoke',
-      tagline: 'Dedicated creative production cell and executive prestige.',
-      basePrice: 12500,
+      name: 'Full-Scale Partner',
+      tagline: 'High-volume creative production & multi-campaign scaling for ambitious brands.',
+      basePrice: 3200,
       popular: false,
       features: [
-        '40+ High-Throughput Motion & Video Deliverables',
-        'Full omnichannel scaling (Reels, TikTok, YouTube, LinkedIn, X)',
-        'Uncapped paid media ad spend management',
-        'Custom fine-tuned Brand Voice AI Model & Sentiment Engine',
-        'Founder & C-Suite executive ghostwriting & video editing',
-        'Dedicated creative director & senior motion designer',
-        '24/7 VIP escalation line & custom SLA guarantees',
+        'Full Multi-Page Conversion Website + Dedicated Offer Funnels',
+        'Aggressive Meta Ads scaling & multi-angle split testing',
+        'Full-month Short-Form Video batch (on-site in Cluj or guided remote)',
+        'Complete Social Media & Local SEO city dominance',
+        'Priority creative & landing page iteration (< 24h)',
+        'Direct executive Slack/WhatsApp line with agency lead',
+        'Custom KPI & pipeline attribution dashboard',
       ],
-      notIncluded: [],
     },
   ];
 
@@ -70,13 +67,13 @@ export const PricingTiers: React.FC<PricingTiersProps> = ({ onSelectTier }) => {
             Transparent Partnerships
           </div>
           <h2 className="text-3xl sm:text-5xl font-black font-display text-white tracking-tight mb-4">
-            Invest in momentum. <br className="hidden sm:inline" />
+            Invest in qualified clients. <br className="hidden sm:inline" />
             <span className="italic font-light bg-gradient-to-r from-cyan-300 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
-              No hidden fees.
+              Zero hidden fees.
             </span>
           </h2>
           <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-8">
-            Select the tier aligned with your current scale. All partnerships include our 14-day velocity onboarding and SLA guarantees.
+            Choose the engagement aligned with your growth stage. Ad spend is paid directly to Meta so you stay 100% in control of your budget.
           </p>
 
           {/* Billing Cycle Toggle */}
@@ -90,7 +87,7 @@ export const PricingTiers: React.FC<PricingTiersProps> = ({ onSelectTier }) => {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Monthly Retainer
+              Monthly Partnership
             </button>
             <button
               type="button"
@@ -124,9 +121,9 @@ export const PricingTiers: React.FC<PricingTiersProps> = ({ onSelectTier }) => {
                 }`}
               >
                 {tier.popular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-sky-400 text-slate-950 text-xs font-extrabold uppercase tracking-wider shadow-lg flex items-center gap-1.5">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-cyan-400 to-sky-400 text-slate-950 text-xs font-extrabold uppercase tracking-wider shadow-lg flex items-center gap-1.5 whitespace-nowrap">
                     <Zap className="w-3.5 h-3.5 fill-current" />
-                    <span>Most Selected Partner Tier</span>
+                    <span>Complete 4-in-1 System</span>
                   </div>
                 )}
 
@@ -139,7 +136,7 @@ export const PricingTiers: React.FC<PricingTiersProps> = ({ onSelectTier }) => {
                   {/* Price */}
                   <div className="flex items-baseline gap-1.5 pb-6 border-b border-slate-800/80 mb-6">
                     <span className="text-4xl sm:text-5xl font-black font-display text-white tracking-tight">
-                      ${calculatedPrice.toLocaleString()}
+                      €{calculatedPrice.toLocaleString()}
                     </span>
                     <span className="text-xs font-medium text-slate-400">/ month</span>
                   </div>
@@ -175,19 +172,19 @@ export const PricingTiers: React.FC<PricingTiersProps> = ({ onSelectTier }) => {
           })}
         </div>
 
-        {/* Guarantee Banner */}
+        {/* Guarantee / Transparency Banner */}
         <div className="p-6 rounded-2xl bg-[#080d17] border border-cyan-500/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div className="flex items-center gap-3">
             <ShieldCheck className="w-8 h-8 text-cyan-400 shrink-0" />
             <div>
-              <div className="text-sm font-bold text-white font-display">The Kromaq 30-Day Growth Guarantee</div>
+              <div className="text-sm font-bold text-white font-display">100% Ownership &amp; Direct Ad Account Transparency</div>
               <p className="text-xs text-slate-400">
-                If we do not out-perform your historical organic retention benchmarks within 30 days, we work the following 30 days free.
+                Your website, creatives, and ad accounts stay under your full ownership 24/7. No rigid lock-in contracts or hidden agency markups.
               </p>
             </div>
           </div>
           <span className="text-xs font-mono text-cyan-400 bg-cyan-950/40 px-3 py-1.5 rounded-lg border border-cyan-800/40 whitespace-nowrap">
-            SLA Backed
+            Direct Partner Model
           </span>
         </div>
       </div>

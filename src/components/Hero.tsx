@@ -22,9 +22,9 @@ export const Hero: React.FC<HeroProps> = ({ onOpenBooking, onExploreWork }) => {
           className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#0e1626]/90 border border-cyan-500/30 text-xs text-slate-300 mb-8 backdrop-blur-md shadow-[0_0_20px_rgba(0,242,254,0.15)] group hover:border-cyan-400/60 transition-all cursor-pointer"
         >
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-          <span className="font-semibold text-white tracking-wide uppercase text-[11px]">Kromaq Motion 2.0</span>
+          <span className="font-semibold text-white tracking-wide uppercase text-[11px]">Kromaq Agency</span>
           <span className="text-slate-500">•</span>
-          <span className="text-cyan-300 font-medium text-[11px]">Next-Gen Social Media Engine</span>
+          <span className="text-cyan-300 font-medium text-[11px]">Digital Growth Partner for Local & B2B</span>
           <ArrowRight className="w-3 h-3 text-cyan-400 group-hover:translate-x-0.5 transition-transform" />
         </div>
 
@@ -98,19 +98,19 @@ export const Hero: React.FC<HeroProps> = ({ onOpenBooking, onExploreWork }) => {
         <div className="flex flex-wrap items-center justify-center gap-y-2 gap-x-6 text-xs text-slate-400">
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-            <span>Guaranteed ROAS & Reach SLAs</span>
+            <span>100% Focus on Leads & ROI</span>
           </div>
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-            <span>14-Day Velocity Onboarding</span>
+            <span>4-in-1: Web, Ads, Video & Local SEO</span>
           </div>
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-            <span>Bespoke Creative Production</span>
+            <span>14-Day System Launch</span>
           </div>
           <div className="flex items-center gap-1.5">
             <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-            <span>Real-Time AI Performance Radar</span>
+            <span>24/7 Transparent Data Access</span>
           </div>
         </div>
       </div>

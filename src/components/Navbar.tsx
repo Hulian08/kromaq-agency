@@ -20,7 +20,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBooking }) => {
 
   const navLinks = [
     { label: 'Services', href: '#services' },
-    { label: 'Work', href: '#work' },
+    { label: 'How We Work', href: '#how-we-work' },
+    { label: 'Results', href: '#work' },
     { label: 'Pricing', href: '#pricing' },
     { label: 'FAQ', href: '#faq' },
   ];
@@ -121,7 +122,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenBooking }) => {
                 }}
                 className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-semibold text-slate-950 bg-gradient-to-r from-cyan-400 to-sky-400 rounded-xl shadow-lg"
               >
-                <span>Book 30-Min Discovery Session</span>
+                <span>Book 20-Min Strategy Audit</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

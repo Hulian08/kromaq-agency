@@ -19,27 +19,27 @@ export const ContactAndBooking: React.FC<ContactAndBookingProps> = ({
   const [brandName, setBrandName] = useState('');
   const [socialHandle, setSocialHandle] = useState('');
   const [selectedBudget, setSelectedBudget] = useState(
-    initialBudget ? `$${initialBudget.toLocaleString()}/mo` : '$5,000 — $10,000/mo'
+    initialBudget ? `€${initialBudget.toLocaleString()}/mo` : '€1,000 — €2,500/mo'
   );
-  const [selectedSlot, setSelectedSlot] = useState('Tomorrow, 2:00 PM EST');
+  const [selectedSlot, setSelectedSlot] = useState('Tomorrow, 11:00 AM');
   const [message, setMessage] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const timeSlots = [
-    'Tomorrow, 11:00 AM EST',
-    'Tomorrow, 2:00 PM EST',
-    'Thursday, 10:30 AM EST',
-    'Thursday, 3:30 PM EST',
-    'Friday, 1:00 PM EST',
+    'Tomorrow, 11:00 AM',
+    'Tomorrow, 2:00 PM',
+    'Thursday, 10:30 AM',
+    'Thursday, 4:00 PM',
+    'Friday, 1:00 PM',
   ];
 
   const budgetOptions = [
-    '$3,500 — $5,000/mo',
-    '$5,000 — $10,000/mo',
-    '$10,000 — $25,000/mo',
-    '$25,000+/mo',
+    '€500 — €1,000/mo',
+    '€1,000 — €2,500/mo',
+    '€2,500 — €5,000/mo',
+    '€5,000+/mo',
   ];
 
   const validate = () => {
@@ -48,7 +48,7 @@ export const ContactAndBooking: React.FC<ContactAndBookingProps> = ({
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       errs.email = 'Please provide a valid work email address.';
     }
-    if (!brandName.trim()) errs.brandName = 'Please provide your brand or company name.';
+    if (!brandName.trim()) errs.brandName = 'Please provide your business or brand name.';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -92,7 +92,7 @@ export const ContactAndBooking: React.FC<ContactAndBookingProps> = ({
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-cyan-500/10 via-blue-600/10 to-purple-600/10 rounded-full blur-[140px] pointer-events-none" />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
-        {/* Large Verdant-style Card Container ("Ready to grow?") */}
+        {/* Large Card Container */}
         <div className="relative rounded-3xl p-1 bg-gradient-to-b from-cyan-500/30 via-slate-800/40 to-transparent shadow-2xl">
           <div className="rounded-[22px] bg-[#090d18] border border-slate-800 p-6 sm:p-12">
             
@@ -103,13 +103,13 @@ export const ContactAndBooking: React.FC<ContactAndBookingProps> = ({
               </div>
 
               <h2 className="text-3xl sm:text-5xl font-black font-display text-white tracking-tight mb-4">
-                Ready to take <br className="hidden sm:inline" />
+                Ready to bring more clients <br className="hidden sm:inline" />
                 <span className="italic font-light bg-gradient-to-r from-cyan-300 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
-                  motion?
+                  into your business?
                 </span>
               </h2>
               <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-                Join forward-thinking brands commanding market attention with Kromaq. Schedule your bespoke 30-minute growth roadmap audit today.
+                Book a 20-minute strategy call on Google Meet. We&apos;ll review where you are currently losing leads and show you concretely how we can build a client acquisition system for your brand.
               </p>
             </div>
 
@@ -119,34 +119,34 @@ export const ContactAndBooking: React.FC<ContactAndBookingProps> = ({
                 <div className="w-16 h-16 mx-auto rounded-full bg-cyan-400/20 text-cyan-300 flex items-center justify-center border border-cyan-400/40">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <h3 className="text-2xl font-bold font-display text-white">Strategy Session Confirmed!</h3>
+                <h3 className="text-2xl font-bold font-display text-white">Strategy Call Reserved!</h3>
                 <p className="text-sm text-slate-300 leading-relaxed">
-                  Thank you, <span className="text-white font-semibold">{fullName}</span>. We've reserved your 30-minute private strategy session with the Kromaq growth team for:
+                  Thank you, <span className="text-white font-semibold">{fullName}</span>. We&apos;ve reserved your 20-minute Google Meet strategy audit for:
                 </p>
 
                 <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-left space-y-2 text-xs">
                   <div className="flex items-center justify-between text-slate-400">
-                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-cyan-400" /> Date & Time:</span>
+                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-cyan-400" /> Date &amp; Time:</span>
                     <span className="text-white font-semibold">{selectedSlot}</span>
                   </div>
                   <div className="flex items-center justify-between text-slate-400">
-                    <span className="flex items-center gap-1.5"><Building className="w-3.5 h-3.5 text-cyan-400" /> Brand:</span>
+                    <span className="flex items-center gap-1.5"><Building className="w-3.5 h-3.5 text-cyan-400" /> Business:</span>
                     <span className="text-white font-semibold">{brandName}</span>
                   </div>
                   <div className="flex items-center justify-between text-slate-400">
-                    <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-cyan-400" /> Confirmation Sent To:</span>
+                    <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-cyan-400" /> Meet Link Sent To:</span>
                     <span className="text-cyan-300 font-mono">{email}</span>
                   </div>
                   {initialTier && (
                     <div className="flex items-center justify-between text-slate-400">
-                      <span>Selected Tier:</span>
+                      <span>Selected Focus:</span>
                       <span className="text-emerald-400 font-semibold">{initialTier}</span>
                     </div>
                   )}
                 </div>
 
                 <p className="text-xs text-slate-400">
-                  Our team is already analyzing your public social handles. You will receive an email calendar invite and direct private link shortly.
+                  We are already reviewing your website and social presence so our call is 100% actionable. No aggressive pitch, just clear insights.
                 </p>
 
                 <button
@@ -178,7 +178,7 @@ export const ContactAndBooking: React.FC<ContactAndBookingProps> = ({
                       <input
                         id="contact-full-name"
                         type="text"
-                        placeholder="e.g. Marcus Vance"
+                        placeholder="e.g. Andrei Popescu"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         className={`w-full pl-10 pr-4 py-3 rounded-xl bg-[#060910] border text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all ${
@@ -199,7 +199,7 @@ export const ContactAndBooking: React.FC<ContactAndBookingProps> = ({
                       <input
                         id="contact-email"
                         type="email"
-                        placeholder="marcus@company.com"
+                        placeholder="you@business.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className={`w-full pl-10 pr-4 py-3 rounded-xl bg-[#060910] border text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all ${
@@ -213,14 +213,14 @@ export const ContactAndBooking: React.FC<ContactAndBookingProps> = ({
                   {/* Brand / Company Name */}
                   <div>
                     <label htmlFor="contact-brand" className="block text-xs font-medium text-slate-300 mb-1.5">
-                      Brand / Organization <span className="text-rose-400">*</span>
+                      Business / Company Name <span className="text-rose-400">*</span>
                     </label>
                     <div className="relative">
                       <Building className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         id="contact-brand"
                         type="text"
-                        placeholder="e.g. Apex Apparel"
+                        placeholder="e.g. Urban Dental Clinic"
                         value={brandName}
                         onChange={(e) => setBrandName(e.target.value)}
                         className={`w-full pl-10 pr-4 py-3 rounded-xl bg-[#060910] border text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all ${
@@ -234,12 +234,12 @@ export const ContactAndBooking: React.FC<ContactAndBookingProps> = ({
                   {/* Primary Social Handle */}
                   <div>
                     <label htmlFor="contact-handle" className="block text-xs font-medium text-slate-300 mb-1.5">
-                      Primary Handle or Website
+                      Website or Instagram / Facebook Page
                     </label>
                     <input
                       id="contact-handle"
                       type="text"
-                      placeholder="@apexbrand / apex.com"
+                      placeholder="yourbusiness.com / @handle"
                       value={socialHandle}
                       onChange={(e) => setSocialHandle(e.target.value)}
                       className="w-full px-4 py-3 rounded-xl bg-[#060910] border border-slate-800 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all"
@@ -250,7 +250,7 @@ export const ContactAndBooking: React.FC<ContactAndBookingProps> = ({
                 {/* Monthly Budget Selector */}
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-2">
-                    Estimated Monthly Marketing / Content Budget
+                    Estimated Monthly Marketing &amp; Growth Budget
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {budgetOptions.map((opt) => (
@@ -275,9 +275,9 @@ export const ContactAndBooking: React.FC<ContactAndBookingProps> = ({
                   <label className="block text-xs font-medium text-slate-300 mb-2 flex items-center justify-between">
                     <span className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-cyan-400" />
-                      Select Desired 30-Min Strategy Call Time
+                      Select Desired 20-Min Strategy Call Time
                     </span>
-                    <span className="text-[11px] text-slate-400 font-mono">Zoom / Google Meet</span>
+                    <span className="text-[11px] text-slate-400 font-mono">Google Meet</span>
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {timeSlots.slice(0, 3).map((slot) => (
@@ -300,12 +300,12 @@ export const ContactAndBooking: React.FC<ContactAndBookingProps> = ({
                 {/* Message / Objectives */}
                 <div>
                   <label htmlFor="contact-goals" className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Current Challenges or Campaign Objectives (Optional)
+                    Current Challenges or Primary Objective (Optional)
                   </label>
                   <textarea
                     id="contact-goals"
                     rows={3}
-                    placeholder="Tell us what you want to achieve (e.g. increase TikTok Shop ROAS, scale organic reels, founder authority)..."
+                    placeholder="Tell us what you want to achieve (e.g. conversion website, Meta Ads lead gen, short-form Reels/TikTok, or Local SEO)..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl bg-[#060910] border border-slate-800 text-sm text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all resize-none"
@@ -319,12 +319,12 @@ export const ContactAndBooking: React.FC<ContactAndBookingProps> = ({
                   className="w-full py-4 rounded-full text-sm font-bold text-slate-950 bg-gradient-to-r from-cyan-300 via-cyan-400 to-sky-400 hover:from-cyan-200 hover:to-sky-300 shadow-[0_0_25px_rgba(0,242,254,0.45)] flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
-                  <span>{isSubmitting ? 'Securing Strategy Slot...' : 'Lock In Your Strategy Audit'}</span>
+                  <span>{isSubmitting ? 'Booking Strategy Call...' : 'Book Your 20-Min Strategy Audit'}</span>
                 </button>
 
                 <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
                   <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                  <span>Strict NDA included. No spam. You will speak directly with an agency lead.</span>
+                  <span>Free Google Meet audit. No obligation, no aggressive sales pitches.</span>
                 </div>
               </form>
             )}

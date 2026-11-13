@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { ServicesBento } from './components/ServicesBento';
+import { ProcessTimeline } from './components/ProcessTimeline';
 import { WorkAndResults } from './components/WorkAndResults';
 import { PricingTiers } from './components/PricingTiers';
 import { Testimonials } from './components/Testimonials';
@@ -108,7 +109,7 @@ export default function App() {
         {/* Hero Section */}
         <Hero
           onOpenBooking={() => handleOpenBooking()}
-          onExploreWork={() => handleScrollToSection('work')}
+          onExploreWork={() => handleScrollToSection('how-we-work')}
         />
 
         {/* Services Bento Grid */}
@@ -119,8 +120,11 @@ export default function App() {
           }}
         />
 
-        {/* Verified Case Studies */}
-        <WorkAndResults onBookNow={() => handleOpenBooking('Custom Case Study Strategy')} />
+        {/* How We Work - 3-Step Implementation */}
+        <ProcessTimeline onOpenBooking={() => handleOpenBooking('How We Work Strategy')} />
+
+        {/* Kromaq Standard & Case Studies */}
+        <WorkAndResults onBookNow={() => handleOpenBooking('Free 20-Min Strategy Audit')} />
 
         {/* Pricing Packages */}
         <PricingTiers onSelectTier={handleSelectTierFromPricing} />

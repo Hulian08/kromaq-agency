@@ -1,60 +1,67 @@
 import React, { useState } from 'react';
-import { Search, Film, Rocket, Sparkles, CheckCircle2, ArrowRight, Clock, ShieldCheck, Zap } from 'lucide-react';
+import { Search, Wrench, TrendingUp, Sparkles, CheckCircle2, ArrowRight } from 'lucide-react';
 
-export const ProcessTimeline: React.FC = () => {
-  const [activeStep, setActiveStep] = useState<number>(1); // Default to Step 2 (Analyze / Produce) like Verdant
+interface ProcessTimelineProps {
+  onOpenBooking?: () => void;
+}
+
+export const ProcessTimeline: React.FC<ProcessTimelineProps> = ({ onOpenBooking }) => {
+  const [activeStep, setActiveStep] = useState<number>(0);
 
   const steps = [
     {
       id: 0,
-      stepNumber: '1',
-      title: 'Connect & Ingest',
-      subtitle: 'Algorithmic Audit & Creative Intelligence',
-      timeframe: 'Days 1 — 3',
+      stepNumber: '01',
+      title: 'Audit & Strategy',
+      subtitle: 'Diagnose Bottlenecks & Map Fastest ROI',
+      timeframe: 'Week 1',
       icon: Search,
-      shortDesc: 'Link your channel metrics and ad accounts with zero-friction integrations.',
-      fullDesc: 'We reverse-engineer your brand voice, historical retention curves, and competitor blind spots using our proprietary AI Trend Radar.',
+      shortDesc: 'We analyze your business, competitors, and conversion leaks.',
+      fullDesc:
+        'We inspect your current digital presence, local competition, and where inquiries are slipping away. We pinpoint which channels—Web, Meta Ads, Video, or Local SEO—will generate the fastest return and lock in clear KPIs.',
       highlights: [
-        'Creative fatigue and hook drop-off diagnosis',
-        'Top 10 competitor content reverse-engineering',
-        '90-day content architecture roadmap',
-        'Brand asset ingestion & style guide syncing',
+        'Full audit of website, social pages & ad history',
+        'Local & B2B competitor breakdown',
+        'Channel priority plan (Web, Ads, Video, SEO)',
+        'Clear lead & cost-per-acquisition KPIs',
       ],
-      metric: '72-Hour Audit Delivery',
+      metric: 'Week 1 Growth Roadmap',
     },
     {
       id: 1,
-      stepNumber: '2',
-      title: 'Analyze & Produce',
-      subtitle: 'Kinetic Motion & Viral Hook Testing',
-      timeframe: 'Days 4 — 10',
-      icon: Film,
-      shortDesc: 'Our AI and studio crew craft bespoke cinema-grade motion creative.',
-      fullDesc: 'Our dedicated production cell animates 3D kinetic typography, luxury aesthetic cuts, dynamic hooks, and sound design engineered for algorithmic retention.',
+      stepNumber: '02',
+      title: 'Build & Launch',
+      subtitle: 'Conversion Infrastructure & Creative Production',
+      timeframe: 'Weeks 2 — 3',
+      icon: Wrench,
+      shortDesc: 'We build your site, shoot/edit videos, and set up paid campaigns.',
+      fullDesc:
+        'We assemble the full acquisition engine under one roof: optimizing or building your website for conversions, scripting and editing high-retention short-form videos, optimizing Google Business SEO, and configuring your Meta Ads.',
       highlights: [
-        '16 to 32 polished motion video deliverables',
-        'Multi-variant hook split testing (4 hooks per asset)',
-        '3D crystalline particle & typography animations',
-        'Audio fingerprint matching with rising viral sounds',
+        'Modern conversion-first website / landing page',
+        'Short-form video scripts, hooks & dynamic editing',
+        'Meta Ads lead generation funnel & pixel tracking',
+        'Google Business Profile & local search setup',
       ],
-      metric: '82.5% Avg Retention',
+      metric: '14-Day System Go-Live',
     },
     {
       id: 2,
-      stepNumber: '3',
-      title: 'Scale & Dominate',
-      subtitle: 'Paid Amplification & AI Attribution',
-      timeframe: 'Days 11 & Beyond',
-      icon: Rocket,
-      shortDesc: 'Deploy insights directly to high-converting paid and organic funnels.',
-      fullDesc: 'We funnel ad spend into verified organic winners, automate real-time bid adjustments, and provide continuous executive reporting via the Kromaq Terminal.',
+      stepNumber: '03',
+      title: 'Optimize & Scale',
+      subtitle: 'Daily CPL Control & Transparent Reporting',
+      timeframe: 'Ongoing',
+      icon: TrendingUp,
+      shortDesc: 'Cut what wastes budget, double down on what brings real clients.',
+      fullDesc:
+        'We monitor cost per lead and inquiry quality every day. Underperforming creatives get cut immediately, budget scales into top-converting angles, and you get clear, jargon-free reports showing real calls and quote requests.',
       highlights: [
-        'Live 24/7 Kromaq Intelligence Hub access',
-        'Continuous ROAS optimization & creative refresh',
-        'Omnichannel distribution (Reels, TikTok, Shorts, LinkedIn)',
-        'Weekly video growth & attribution strategy calls',
+        'Daily cost-per-lead & lead quality monitoring',
+        'Continuous creative testing & ad optimization',
+        '24/7 direct access to your real ad accounts & data',
+        'Jargon-free reporting focused on revenue & bookings',
       ],
-      metric: '4.8x Avg ROAS Lift',
+      metric: 'Predictable Weekly Leads',
     },
   ];
 
@@ -62,28 +69,29 @@ export const ProcessTimeline: React.FC = () => {
   const StepIcon = currentStep.icon;
 
   return (
-    <section id="approach" className="py-20 md:py-28 relative bg-[#06090e] border-t border-slate-800/80">
+    <section id="how-we-work" className="py-20 md:py-28 relative bg-[#06090e] border-t border-slate-800/80">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        
-        {/* Section Header matching Verdant exact layout */}
+        {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 text-xs font-semibold uppercase tracking-wider mb-4">
             <Sparkles className="w-3.5 h-3.5" />
-            The Kromaq Motion Framework
+            Structured Implementation
           </div>
           <h2 className="text-3xl sm:text-5xl font-black font-display text-white tracking-tight mb-4">
-            Designed for simplicity.
+            How we go from discussion to{' '}
+            <span className="italic font-light bg-gradient-to-r from-cyan-300 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
+              results in 3 steps.
+            </span>
           </h2>
           <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-            Get up and running in days, not months. Our motion engine seamlessly integrates with your existing channels.
+            No corporate bureaucracy or months of waiting. Everything moves from audit to live client acquisition cleanly and fast.
           </p>
         </div>
 
-        {/* 3 Connected Interactive Step Nodes (Verdant Style) */}
+        {/* 3 Connected Interactive Step Nodes */}
         <div className="relative mb-12">
-          {/* Subtle connecting horizontal line behind the circles */}
           <div className="absolute top-8 left-16 right-16 h-[1.5px] bg-slate-800 hidden md:block z-0" />
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
             {steps.map((step, idx) => {
               const Icon = step.icon;
@@ -97,9 +105,7 @@ export const ProcessTimeline: React.FC = () => {
                   className="flex flex-col items-center text-center cursor-pointer group focus:outline-none"
                   aria-pressed={isActive}
                 >
-                  {/* Circle Node with glowing dot on active */}
                   <div className="relative mb-5">
-                    {/* Glowing active indicator dot above the node (Verdant signature) */}
                     {isActive && (
                       <span className="absolute -top-3 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-cyan-300 shadow-[0_0_12px_#00F2FE] animate-pulse" />
                     )}
@@ -115,7 +121,9 @@ export const ProcessTimeline: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Title & Short Description */}
+                  <div className="text-[11px] font-mono text-cyan-400 uppercase tracking-wider mb-1">
+                    {step.timeframe}
+                  </div>
                   <div className="text-sm font-bold font-display text-white mb-1 transition-colors group-hover:text-cyan-300">
                     {step.stepNumber}. {step.title}
                   </div>
@@ -131,12 +139,11 @@ export const ProcessTimeline: React.FC = () => {
         {/* Dynamic Detail Card for the Active Step */}
         <div className="p-1 rounded-3xl bg-gradient-to-r from-cyan-500/20 via-slate-800/40 to-blue-500/20 shadow-2xl">
           <div className="p-6 sm:p-8 rounded-[22px] bg-[#080d17] border border-slate-800/90 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
             {/* Left Column: Description & Highlights */}
             <div className="lg:col-span-7 space-y-4 text-left">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 text-[11px] font-mono font-bold">
-                  PHASE 0{currentStep.stepNumber} // {currentStep.timeframe}
+                  STEP {currentStep.stepNumber} // {currentStep.timeframe.toUpperCase()}
                 </span>
                 <span className="text-xs text-slate-500">•</span>
                 <span className="text-xs font-semibold text-slate-300">{currentStep.subtitle}</span>
@@ -166,19 +173,28 @@ export const ProcessTimeline: React.FC = () => {
               </div>
               <div>
                 <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest block">
-                  KEY PERFORMANCE TARGET
+                  PHASE MILESTONE
                 </span>
-                <div className="text-2xl font-black font-display text-white mt-1">
+                <div className="text-xl sm:text-2xl font-black font-display text-white mt-1">
                   {currentStep.metric}
                 </div>
               </div>
               <p className="text-[11px] text-slate-400 max-w-xs">
-                Guaranteed by Kromaq velocity agreements with weekly performance checks.
+                Direct communication, rapid execution, and full 24/7 visibility into your accounts.
               </p>
+              {onOpenBooking && (
+                <button
+                  type="button"
+                  onClick={onOpenBooking}
+                  className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-cyan-500/15 hover:bg-cyan-400 text-cyan-300 hover:text-slate-950 border border-cyan-500/30 text-xs font-semibold transition-all cursor-pointer"
+                >
+                  <span>Book Your Free Audit Call</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
           </div>
         </div>
-
       </div>
     </section>
   );

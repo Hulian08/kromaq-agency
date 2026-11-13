@@ -1,33 +1,33 @@
 import React, { useState } from 'react';
-import { ChevronDown, Sparkles, HelpCircle } from 'lucide-react';
+import { ChevronDown, HelpCircle } from 'lucide-react';
 
 export const FAQ: React.FC = () => {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   const faqs = [
     {
-      q: 'How does Kromaq’s 14-day velocity onboarding work?',
-      a: 'On Day 1, we conduct an exhaustive algorithmic audit of your brand, existing video retention drop-offs, and top 10 competitors. By Day 4, scripts and 3D kinetic storyboards are approved. By Day 10, your first high-throughput batch of 12-24 cinema-grade motion assets is rendered, captioned, and scheduled.',
+      q: 'How long does it take to see concrete results?',
+      a: 'For Meta Ads campaigns and conversion landing pages, your first quote requests and leads typically start coming in within 7–14 days after launch. For Local SEO and organic growth via short-form video, momentum compounds strongly over 30–60 days.',
     },
     {
-      q: 'Do you manage paid ad spend or solely create organic video content?',
-      a: 'We operate as an integrated full-funnel partner. While our Launch tier focuses on organic content volume, our Motion & Performance and Enterprise tiers manage paid media across Meta Ads, TikTok Shop, and YouTube, using real-time algorithmic attribution to funnel budget into winning hooks.',
+      q: 'What ad budget do I need alongside your services?',
+      a: 'For local and B2B businesses, we recommend a minimum testing ad budget of €300–€500/month paid directly to Meta (Facebook/Instagram), giving the algorithm enough data to optimize your cost per lead effectively.',
     },
     {
-      q: 'Who owns the creative assets and raw 3D render files?',
-      a: 'You do. 100% of all scripts, 3D motion renders, project files, audio mixes, and copy produced during our partnership belong exclusively to your brand with full commercial rights in perpetuity.',
+      q: 'Do I have to handle filming or writing scripts myself?',
+      a: 'No. We provide the scripts, hooks, and full creative direction. If you are in the Cluj-Napoca area, our team handles filming on-site; if you are located elsewhere, we give you clear step-by-step filming guidance and handle all editing and post-production.',
     },
     {
-      q: 'What platforms do you support?',
-      a: 'We specialize in short-form and high-retention video: Instagram Reels, TikTok, YouTube Shorts, and LinkedIn video. For paid media, we manage Meta (Instagram/Facebook), TikTok Ads Manager, and Google/YouTube video campaigns.',
+      q: 'Do you only work with specific industries?',
+      a: 'We partner with local businesses (medical & aesthetic clinics, automotive services, salons, real estate, HoReCa) and B2B companies that already have a validated service and want a predictable client acquisition system—without relying solely on referrals.',
     },
     {
-      q: 'What is the Kromaq AI Trend Radar?',
-      a: 'Unlike generic social listening tools that summarize past hashtags, our proprietary AI scrapers track velocity shifts in audio soundbites, emerging comment sentiment patterns, and hook retention curves across 200k+ viral videos daily. This lets our creators produce content on rising trends 48-72 hours before competitors notice.',
+      q: 'Why work with Kromaq instead of a traditional agency?',
+      a: 'Large agencies lock you into rigid contracts and send reports filled with vanity metrics. We work as a direct growth partner: fast, transparent, everything under one roof (Web, Meta Ads, Video & Local SEO), and 100% focused on bookings and profitability.',
     },
     {
-      q: 'How does collaboration work with our in-house marketing team?',
-      a: 'We plug directly into your workflow via a dedicated private Slack channel, shared Notion dashboard, and the live Kromaq Terminal. We augment your internal team by removing the burden of ideation, scriptwriting, motion graphics, and video editing.',
+      q: 'What happens during the free 20-minute Google Meet audit?',
+      a: 'We look live at your website, social channels, and local market competition to spot exactly where potential customers are slipping away and map out how an integrated acquisition system would work for your business. Zero obligation, zero aggressive sales pitches.',
     },
   ];
 
@@ -40,10 +40,13 @@ export const FAQ: React.FC = () => {
             Frequently Asked Questions
           </div>
           <h2 className="text-3xl sm:text-5xl font-black font-display text-white tracking-tight mb-4">
-            Clarity on everything.
+            Everything you need to know{' '}
+            <span className="italic font-light bg-gradient-to-r from-cyan-300 via-sky-300 to-indigo-300 bg-clip-text text-transparent">
+              before we start.
+            </span>
           </h2>
           <p className="text-slate-400 text-sm sm:text-base">
-            Everything you need to know about working with Kromaq.
+            Clear, direct answers about timelines, budgets, filming, and how we deliver results.
           </p>
         </div>
 
