@@ -31,7 +31,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenBooking, onExploreWork }) => {
         {/* Hero Title with Verdant-style bold typography and italic glowing accent */}
         <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black font-display tracking-tight text-white max-w-5xl mx-auto leading-[1.08] mb-6">
           Social media in{' '}
-          <span className="italic font-light bg-gradient-to-r from-cyan-300 via-sky-300 to-indigo-300 bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(0,242,254,0.45)]">
+          <span className="italic font-light bg-clip-text text-transparent animate-motion-word pr-1.5">
             motion.
           </span>
           <span className="block text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-200 mt-2 font-display">
